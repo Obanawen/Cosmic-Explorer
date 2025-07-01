@@ -15,14 +15,19 @@ const navigationItems = [
     icon: Home,
   },
   {
-    name: 'Leaderboard',
-    href: '/leaderboard',
+    name: 'Stages',
+    href: '/stages',
     icon: Trophy,
   },
   {
-    name: 'Pricing',
-    href: '/pricing',
+    name: 'Competition',
+    href: '/competition',
     icon: DollarSign,
+  },
+  {
+    name: 'My Profile',
+    href: '/profile',
+    icon: Menu,
   },
 ];
 
@@ -67,6 +72,12 @@ export function Navigation() {
               <NavLink key={item.name} item={item} />
             ))}
           </nav>
+          {/* Login Button Desktop */}
+          <div className="hidden md:flex items-center ml-4">
+            <Link href="/login">
+              <Button variant="default">Login</Button>
+            </Link>
+          </div>
 
           {/* Mobile Navigation */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -100,6 +111,10 @@ export function Navigation() {
                   {navigationItems.map((item) => (
                     <NavLink key={item.name} item={item} className="w-full justify-start" />
                   ))}
+                  {/* Login Button Mobile */}
+                  <Link href="/login" className="mt-4">
+                    <Button variant="default" className="w-full">Login</Button>
+                  </Link>
                 </nav>
               </div>
             </SheetContent>
