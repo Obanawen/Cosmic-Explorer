@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 const stages = Array.from({ length: 100 }, (_, i) => ({
@@ -42,10 +43,12 @@ export default function StagesPage() {
         <h1 className="text-3xl font-bold mb-6 text-center">Space Stages</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-h-[70vh] overflow-y-auto p-2 bg-white bg-opacity-70 rounded-lg shadow">
           {stages.map((stage, idx) => (
-            <Button key={idx} variant="outline" className="flex flex-col items-start p-4 h-auto min-h-[100px] text-left whitespace-normal shadow hover:shadow-lg transition">
-              <span className="font-semibold text-lg mb-1">{stage.name}</span>
-              <span className="text-gray-700 text-sm">{stage.description}</span>
-            </Button>
+            <Link key={idx} href={`/stages/${idx + 1}`} className="contents">
+              <Button variant="outline" className="flex flex-col items-start p-4 h-auto min-h-[100px] text-left whitespace-normal shadow hover:shadow-lg transition w-full">
+                <span className="font-semibold text-lg mb-1">{stage.name}</span>
+                <span className="text-gray-700 text-sm">{stage.description}</span>
+              </Button>
+            </Link>
           ))}
         </div>
       </div>
