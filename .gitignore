@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Synology NAS specific files and directories
+@eaDir/
+*/@eaDir/
+**/@eaDir/
+.SynologyWorkingDirectory/
+*/.SynologyWorkingDirectory/
+**/.SynologyWorkingDirectory/
+#recycle/
+Thumbs.db
+ehthumbs.db

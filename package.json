@@ -1,27 +1,65 @@
 {
-  "name": "mark-checker",
-  "version": "0.1.0",
+  "name": "ai-mark-checker",
+  "version": "1.0.0",
+  "description": "AI-powered image mark detection and analysis application using OpenAI Vision API",
+  "author": "Your Name",
+  "keywords": [
+    "nextjs",
+    "ai",
+    "image-analysis",
+    "mark-detection",
+    "openai",
+    "shadcn"
+  ],
+  "homepage": "https://github.com/yourusername/ai-mark-checker",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ai-mark-checker.git"
+  },
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev -p 3020",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3020",
     "lint": "next lint"
   },
+  "packageManager": "yarn@4.0.0",
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.3.3"
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@tailwindcss/postcss": "^4.1.10",
+    "autoprefixer": "^10.4.21",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
+    "lucide-react": "^0.462.0",
+    "mammoth": "^1.9.1",
+    "next": "15.0.3",
+    "openai": "^4.73.0",
+    "pdf-parse": "^1.1.1",
+    "pdf2pic": "^3.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.34.2",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.3",
-    "@eslint/eslintrc": "^3"
+    "@eslint/eslintrc": "^3.1.0",
+    "@types/node": "^20.17.6",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "15.0.3",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
