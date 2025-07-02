@@ -149,12 +149,8 @@ export default function StageUploadPage() {
 
   const handleTypedSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const len = typedContent.trim().length;
-    let score = 60;
-    if (len >= 300) score = Math.floor(Math.random() * 11) + 90; // 90-100
-    else if (len >= 200) score = Math.floor(Math.random() * 10) + 80; // 80-89
-    else if (len >= 100) score = Math.floor(Math.random() * 10) + 70; // 70-79
-    else score = Math.floor(Math.random() * 10) + 60; // 60-69
+    const wordCount = typedContent.trim().split(/\s+/).filter(Boolean).length;
+    let score = Math.min(100, Math.floor(wordCount / 3));
     router.push(`/stages/${stageId}/result?score=${score}`);
   };
 
@@ -268,6 +264,10 @@ export default function StageUploadPage() {
                 onChange={e => { setTypedContent(e.target.value); setTypedSubmitted(false); }}
                 required
               />
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Word count: {typedContent.trim().split(/\s+/).filter(Boolean).length}</span>
+                <span>Score: {Math.min(100, Math.floor(typedContent.trim().split(/\s+/).filter(Boolean).length / 3))}</span>
+              </div>
               <Button type="submit" className="w-full">Submit Typed Content</Button>
               {typedSubmitted && (
                 <div className="text-green-600 text-center font-medium mt-2">Your content has been submitted!</div>
