@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, FileImage, CheckCircle, XCircle, Loader2, BookOpen, Award, Download } from 'lucide-react';
+import WebsiteSlide from '@/components/WebsiteSlide';
 
 interface GradingCategory {
   category: string;
@@ -272,6 +273,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <WebsiteSlide />
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center py-8">
