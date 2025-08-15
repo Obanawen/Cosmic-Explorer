@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Menu, Home, Trophy, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 
 const navigationItems = [
   {
@@ -72,11 +73,19 @@ export function Navigation() {
               <NavLink key={item.name} item={item} />
             ))}
           </nav>
-          {/* Login Button Desktop */}
-          <div className="hidden md:flex items-center ml-4">
-            <Link href="/login">
-              <Button variant="default">Login</Button>
-            </Link>
+          {/* Authentication Buttons Desktop */}
+          <div className="hidden md:flex items-center ml-4 space-x-2">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button variant="outline">Sign In</Button>
+              </SignInButton>
+              <Link href="/signup">
+                <Button variant="default">Sign Up</Button>
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
           </div>
 
           {/* Mobile Navigation */}
@@ -111,10 +120,20 @@ export function Navigation() {
                   {navigationItems.map((item) => (
                     <NavLink key={item.name} item={item} className="w-full justify-start" />
                   ))}
-                  {/* Login Button Mobile */}
-                  <Link href="/login" className="mt-4">
-                    <Button variant="default" className="w-full">Login</Button>
-                  </Link>
+                  {/* Authentication Buttons Mobile */}
+                  <div className="mt-4 space-y-2">
+                    <SignedOut>
+                      <SignInButton mode="modal">
+                        <Button variant="outline" className="w-full">Sign In</Button>
+                      </SignInButton>
+                      <Link href="/signup">
+                        <Button variant="default" className="w-full">Sign Up</Button>
+                      </Link>
+                    </SignedOut>
+                    <SignedIn>
+                      <UserButton afterSignOutUrl="/" />
+                    </SignedIn>
+                  </div>
                 </nav>
               </div>
             </SheetContent>
