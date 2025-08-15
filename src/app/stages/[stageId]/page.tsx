@@ -178,7 +178,7 @@ export default function StageUploadPage() {
   const handleTypedSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const wordCount = typedContent.trim().split(/\s+/).filter(Boolean).length;
-    let score = Math.min(100, Math.floor(wordCount / 3));
+    const score = Math.min(100, Math.floor(wordCount / 3));
     
     // Save the score to progress context
     updateStageScore(stageId, score);
