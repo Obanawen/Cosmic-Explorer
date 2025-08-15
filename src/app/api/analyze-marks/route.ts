@@ -259,24 +259,51 @@ async function analyzeTextContent(text: string): Promise<string> {
     messages: [
       {
         role: "user",
-        content: `Please analyze the following text content and provide a detailed evaluation with scoring based on the following marking scheme:
+        content: `Please analyze the following text content and provide a detailed evaluation with scoring based on the following comprehensive marking scheme:
 
-**MARKING SCHEME (Total: 100 marks)**
-1. **Spelling (10 marks)** - Check for spelling errors and accuracy
-2. **Grammar (20 marks)** - Evaluate grammatical correctness, sentence structure, punctuation
-3. **Content Length (10 marks)** - Assess if content length is appropriate (not too short/long)
-4. **Wording (10 marks)** - Evaluate word choice, vocabulary usage, clarity
-5. **Content Interest/Logic (20 marks)** - Assess logical flow, coherence, and engagement
-6. **Other Categories (30 marks total):**
-   - Clarity and Coherence (10 marks) - How clear and well-connected the ideas are
-   - Structure and Organization (10 marks) - Overall structure, paragraphing, flow
-   - Tone and Style (10 marks) - Appropriateness of tone, writing style, voice
+**COMPREHENSIVE MARKING SCHEME (Total: 100 marks)**
+
+1. **Spelling (15 marks)** - Check for spelling errors and accuracy
+   - Perfect spelling: 15 marks
+   - 1-2 minor errors: 12-14 marks
+   - 3-5 errors: 8-11 marks
+   - 6+ errors: 0-7 marks
+   - Provide specific corrections for each error
+
+2. **Grammar (25 marks)** - Evaluate grammatical correctness and sentence structure
+   - Subject-verb agreement: 5 marks
+   - Tense consistency: 5 marks
+   - Sentence structure: 5 marks
+   - Parts of speech: 5 marks
+   - Other grammatical rules: 5 marks
+   - Provide specific examples of errors and corrections
+
+3. **Punctuation (15 marks)** - Assess punctuation usage and accuracy
+   - Periods, commas, semicolons: 5 marks
+   - Apostrophes and quotation marks: 5 marks
+   - Capitalization: 5 marks
+   - Provide specific examples of incorrect usage and corrections
+
+4. **Content Length (10 marks)** - Assess if content length is appropriate
+   - Too short: 0-3 marks
+   - Appropriate length: 7-10 marks
+   - Too long: 4-6 marks
+
+5. **Wording and Vocabulary (15 marks)** - Evaluate word choice and clarity
+   - Word choice appropriateness: 5 marks
+   - Vocabulary level: 5 marks
+   - Clarity of expression: 5 marks
+
+6. **Content Quality (20 marks)** - Assess logical flow and engagement
+   - Logical flow: 10 marks
+   - Content coherence: 10 marks
 
 **Instructions:**
 - Evaluate each category based on the text content provided
-- Provide specific examples and explanations for deductions
+- Provide specific examples and corrections for grammar, spelling, and punctuation errors
 - Give a score out of the maximum marks for each category
 - Provide constructive feedback and suggestions for improvement
+- Include specific corrections for identified errors
 
 **Text to analyze:**
 ${text}
@@ -289,21 +316,43 @@ ${text}
   "categories": [
     {
       "category": "Spelling",
-      "score": 8,
-      "maxScore": 10,
-      "feedback": "Specific feedback with examples",
-      "issues": ["list of specific issues found"],
-      "suggestions": ["list of improvement suggestions"]
+      "score": 12,
+      "maxScore": 15,
+      "feedback": "Good spelling overall with 2 minor errors",
+      "issues": ["'recieve' should be 'receive'", "'occured' should be 'occurred'"],
+      "suggestions": ["Double-check common spelling patterns", "Use spell-check tools"],
+      "corrections": ["recieve → receive", "occured → occurred"]
+    },
+    {
+      "category": "Grammar",
+      "score": 20,
+      "maxScore": 25,
+      "feedback": "Generally good grammar with some tense inconsistencies",
+      "issues": ["Mixed past and present tense in paragraph 2", "Missing subject in sentence 3"],
+      "suggestions": ["Maintain consistent tense throughout", "Ensure every sentence has a clear subject"],
+      "corrections": ["'I went' should be 'I go' for consistency", "Add 'The student' at beginning of sentence"]
+    },
+    {
+      "category": "Punctuation",
+      "score": 13,
+      "maxScore": 15,
+      "feedback": "Good punctuation with minor comma issues",
+      "issues": ["Missing comma after introductory phrase", "Incorrect semicolon usage"],
+      "suggestions": ["Review comma rules for introductory elements", "Use semicolons to connect related independent clauses"],
+      "corrections": ["Add comma after 'However'", "Replace semicolon with comma in compound sentence"]
     }
   ],
-  "overallFeedback": "General assessment and key recommendations",
+  "overallFeedback": "Good effort with room for improvement in grammar consistency and punctuation",
   "grade": "B+",
-  "strengths": ["key strengths identified"],
-  "areasForImprovement": ["key areas needing work"]
+  "strengths": ["Clear content structure", "Good vocabulary usage"],
+  "areasForImprovement": ["Grammar consistency", "Punctuation accuracy"],
+  "grammarCorrections": ["List of specific grammar corrections"],
+  "spellingCorrections": ["List of specific spelling corrections"],
+  "punctuationCorrections": ["List of specific punctuation corrections"]
 }`
       }
     ],
-    max_tokens: 2000,
+    max_tokens: 2500,
     temperature: 0.1,
   });
 
@@ -335,18 +384,44 @@ async function analyzeImageContent(file: File): Promise<string> {
               type: "text",
               text: `Please analyze the text content in this image and provide a detailed evaluation.
 
-First, carefully examine the image and extract ALL visible text. Then evaluate the text using this marking scheme:
+First, carefully examine the image and extract ALL visible text. Then evaluate the text using this comprehensive marking scheme:
 
-**MARKING SCHEME (Total: 100 marks)**
-1. **Spelling (10 marks)** - Check for spelling errors and accuracy
-2. **Grammar (20 marks)** - Evaluate grammatical correctness, sentence structure, punctuation
-3. **Content Length (10 marks)** - Assess if content length is appropriate (not too short/long)
-4. **Wording (10 marks)** - Evaluate word choice, vocabulary usage, clarity
-5. **Content Interest/Logic (20 marks)** - Assess logical flow, coherence, and engagement
-6. **Other Categories (30 marks total):**
-   - Clarity and Coherence (10 marks) - How clear and well-connected the ideas are
-   - Structure and Organization (10 marks) - Overall structure, paragraphing, flow
-   - Tone and Style (10 marks) - Appropriateness of tone, writing style, voice
+**COMPREHENSIVE MARKING SCHEME (Total: 100 marks)**
+
+1. **Spelling (15 marks)** - Check for spelling errors and accuracy
+   - Perfect spelling: 15 marks
+   - 1-2 minor errors: 12-14 marks
+   - 3-5 errors: 8-11 marks
+   - 6+ errors: 0-7 marks
+   - Provide specific corrections for each error
+
+2. **Grammar (25 marks)** - Evaluate grammatical correctness and sentence structure
+   - Subject-verb agreement: 5 marks
+   - Tense consistency: 5 marks
+   - Sentence structure: 5 marks
+   - Parts of speech: 5 marks
+   - Other grammatical rules: 5 marks
+   - Provide specific examples of errors and corrections
+
+3. **Punctuation (15 marks)** - Assess punctuation usage and accuracy
+   - Periods, commas, semicolons: 5 marks
+   - Apostrophes and quotation marks: 5 marks
+   - Capitalization: 5 marks
+   - Provide specific examples of incorrect usage and corrections
+
+4. **Content Length (10 marks)** - Assess if content length is appropriate
+   - Too short: 0-3 marks
+   - Appropriate length: 7-10 marks
+   - Too long: 4-6 marks
+
+5. **Wording and Vocabulary (15 marks)** - Evaluate word choice and clarity
+   - Word choice appropriateness: 5 marks
+   - Vocabulary level: 5 marks
+   - Clarity of expression: 5 marks
+
+6. **Content Quality (20 marks)** - Assess logical flow and engagement
+   - Logical flow: 10 marks
+   - Content coherence: 10 marks
 
 **CRITICAL: If no readable text is found in the image, respond with:**
 {
@@ -368,17 +443,39 @@ First, carefully examine the image and extract ALL visible text. Then evaluate t
   "categories": [
     {
       "category": "Spelling",
-      "score": 8,
-      "maxScore": 10,
-      "feedback": "Specific feedback with examples",
-      "issues": ["list of specific issues found"],
-      "suggestions": ["list of improvement suggestions"]
+      "score": 12,
+      "maxScore": 15,
+      "feedback": "Good spelling overall with 2 minor errors",
+      "issues": ["'recieve' should be 'receive'", "'occured' should be 'occurred'"],
+      "suggestions": ["Double-check common spelling patterns", "Use spell-check tools"],
+      "corrections": ["recieve → receive", "occured → occurred"]
+    },
+    {
+      "category": "Grammar",
+      "score": 20,
+      "maxScore": 25,
+      "feedback": "Generally good grammar with some tense inconsistencies",
+      "issues": ["Mixed past and present tense in paragraph 2", "Missing subject in sentence 3"],
+      "suggestions": ["Maintain consistent tense throughout", "Ensure every sentence has a clear subject"],
+      "corrections": ["'I went' should be 'I go' for consistency", "Add 'The student' at beginning of sentence"]
+    },
+    {
+      "category": "Punctuation",
+      "score": 13,
+      "maxScore": 15,
+      "feedback": "Good punctuation with minor comma issues",
+      "issues": ["Missing comma after introductory phrase", "Incorrect semicolon usage"],
+      "suggestions": ["Review comma rules for introductory elements", "Use semicolons to connect related independent clauses"],
+      "corrections": ["Add comma after 'However'", "Replace semicolon with comma in compound sentence"]
     }
   ],
-  "overallFeedback": "General assessment and key recommendations",
+  "overallFeedback": "Good effort with room for improvement in grammar consistency and punctuation",
   "grade": "B+",
-  "strengths": ["key strengths identified"],
-  "areasForImprovement": ["key areas needing work"]
+  "strengths": ["Clear content structure", "Good vocabulary usage"],
+  "areasForImprovement": ["Grammar consistency", "Punctuation accuracy"],
+  "grammarCorrections": ["List of specific grammar corrections"],
+  "spellingCorrections": ["List of specific spelling corrections"],
+  "punctuationCorrections": ["List of specific punctuation corrections"]
 }
 
 Remember: Return ONLY valid JSON, no markdown formatting or additional text.`
@@ -392,7 +489,7 @@ Remember: Return ONLY valid JSON, no markdown formatting or additional text.`
           ]
         }
       ],
-      max_tokens: 2000,
+      max_tokens: 2500,
       temperature: 0.1,
     });
 

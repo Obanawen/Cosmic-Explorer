@@ -2,8 +2,9 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Unlock, Trophy } from 'lucide-react';
+import { Lock, Unlock, Trophy, Star, Target, Rocket, Crown } from 'lucide-react';
 import { useStageProgress } from '@/lib/stageProgress';
+import { scoreToGrade, getGradeColor, getScoreMessage, getMilestoneMessage } from '@/lib/utils';
 
 const stages = Array.from({ length: 100 }, (_, i) => ({
   name: `Stage ${i + 1}: ${spaceStageName(i + 1)}`,
@@ -49,6 +50,20 @@ export default function StagesPage() {
   const nextStageProgress = nextStageToUnlock ? (stageScores[nextStageToUnlock - 1] || 0) : 0;
   const nextStageUnlockPercentage = nextStageToUnlock ? Math.min(100, (nextStageProgress / 60) * 100) : 0;
 
+  // Get motivational message for progress
+  const getProgressMessage = () => {
+    if (unlockedStages.length === 0) return "🚀 Ready to begin your cosmic adventure? Start with Stage 1!";
+    if (unlockedStages.length < 10) return "🌱 You're just getting started! Keep exploring!";
+    if (unlockedStages.length < 25) return "⭐ Great progress! You're building momentum!";
+    if (unlockedStages.length < 50) return "🌟 Fantastic work! You're becoming a seasoned explorer!";
+    if (unlockedStages.length < 75) return "🚀 Incredible progress! You're more than halfway there!";
+    if (unlockedStages.length < 100) return "🏆 Almost there! You're in the final stretch!";
+    return "🎊 UNSTOPPABLE! You've unlocked all stages!";
+  };
+
+  // Get milestone message
+  const milestoneMessage = getMilestoneMessage(unlockedStages.length);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-4xl mx-auto">
@@ -73,6 +88,23 @@ export default function StagesPage() {
             <span>{Math.round((unlockedStages.length / 100) * 100)}% Complete</span>
           </div>
           
+          {/* Motivational Message */}
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
+            <p className="text-sm text-blue-800 font-medium text-center">
+              {getProgressMessage()}
+            </p>
+          </div>
+
+          {/* Milestone Message */}
+          {milestoneMessage && (
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-3">
+              <div className="flex items-center justify-center gap-2 text-yellow-800">
+                <Star className="h-4 w-4" />
+                <span className="text-sm font-medium">{milestoneMessage}</span>
+              </div>
+            </div>
+          )}
+          
           {/* Next Stage Progress */}
           {nextStageToUnlock && (
             <div className="border-t pt-3">
@@ -90,6 +122,13 @@ export default function StagesPage() {
                   style={{ width: `${nextStageUnlockPercentage}%` }}
                 ></div>
               </div>
+              <div className="mt-2 text-center">
+                <span className="text-xs text-gray-600">
+                  {nextStageProgress < 30 ? "💪 Keep going! You're building momentum!" :
+                   nextStageProgress < 50 ? "⭐ Great progress! You're getting closer!" :
+                   "🎯 Almost there! Just a few more points!"}
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -100,6 +139,7 @@ export default function StagesPage() {
             const isUnlocked = isStageUnlocked(stageId);
             const score = stageScores[stageId] || 0;
             const hasPassed = score >= 60;
+            const grade = scoreToGrade(score);
 
             return (
               <div key={idx} className="relative">
@@ -124,12 +164,25 @@ export default function StagesPage() {
                         <span className={`font-medium ${hasPassed ? 'text-green-600' : 'text-gray-600'}`}>
                           Score: {score}/100
                         </span>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs font-bold ${getGradeColor(grade)}`}
+                        >
+                          {grade}
+                        </Badge>
                         {hasPassed && (
                           <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
                             Passed
                           </Badge>
                         )}
                       </div>
+                      
+                      {/* Motivational message for the stage */}
+                      {score > 0 && (
+                        <div className="mt-2 text-xs text-gray-600">
+                          {getScoreMessage(score)}
+                        </div>
+                      )}
                     </Button>
                   </Link>
                 ) : (
@@ -146,6 +199,9 @@ export default function StagesPage() {
                       <span className="text-gray-500 text-sm mb-2">{stage.description}</span>
                       <div className="text-sm text-gray-500">
                         <span>Requires 60+ points on Stage {stageId - 1}</span>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-500">
+                        🔒 Keep working on the previous stage to unlock this one!
                       </div>
                     </Button>
                     <div className="absolute inset-0 bg-gray-200 bg-opacity-20 rounded-lg"></div>
