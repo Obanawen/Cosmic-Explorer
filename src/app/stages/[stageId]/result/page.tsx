@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useStageProgress } from '@/lib/stageProgress';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Trophy, Lock, ArrowRight } from 'lucide-react';
 
 export default function StageResultPage() {
@@ -13,10 +13,14 @@ export default function StageResultPage() {
   const stageId = Number(params.stageId);
   const score = Number(searchParams.get('score') || '0');
   const { updateStageScore, isStageUnlocked } = useStageProgress();
+  const hasUpdatedScore = useRef(false);
 
-  // Save the score when the page loads
+  // Save the score when the page loads, but only once
   useEffect(() => {
-    updateStageScore(stageId, score);
+    if (!hasUpdatedScore.current && score > 0) {
+      updateStageScore(stageId, score);
+      hasUpdatedScore.current = true;
+    }
   }, [stageId, score, updateStageScore]);
 
   const nextStageUnlocked = isStageUnlocked(stageId + 1);
