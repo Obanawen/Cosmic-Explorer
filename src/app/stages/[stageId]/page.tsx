@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, BookOpen, FileImage, Loader2, Award, XCircle, CheckCircle, Download } from 'lucide-react';
 import { useState, useCallback } from 'react';
+import { useStageProgress } from '@/lib/stageProgress';
 
 const stageNames = [
   'Liftoff', 'Orbit Insertion', 'Lunar Approach', 'Asteroid Belt', 'Solar Flare',
@@ -41,6 +42,24 @@ export default function StageUploadPage() {
   const router = useRouter();
   const stageId = Number(params.stageId);
   const stageName = getStageName(stageId);
+  const { updateStageScore, isStageUnlocked } = useStageProgress();
+
+  // Check if stage is unlocked
+  if (!isStageUnlocked(stageId)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-md w-full bg-white bg-opacity-80 rounded-lg shadow-lg p-8 text-center">
+          <h1 className="text-3xl font-bold mb-4 text-red-600">Stage Locked</h1>
+          <p className="text-lg text-gray-700 mb-4">
+            You need to score at least 60 points on Stage {stageId - 1} to unlock this stage.
+          </p>
+          <Button onClick={() => router.push('/stages')} className="w-full">
+            Back to Stages
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // --- Upload logic copied from landing page ---
   const [file, setFile] = useState<File | null>(null);
@@ -128,6 +147,15 @@ export default function StageUploadPage() {
         throw new Error(data.error || 'Failed to analyze file');
       }
       setResult(data);
+      
+      // Extract score from analysis result and save it
+      if (data.analysis && typeof data.analysis.totalScore === 'number') {
+        const score = data.analysis.totalScore;
+        updateStageScore(stageId, score);
+        
+        // Redirect to result page with the score
+        router.push(`/stages/${stageId}/result?score=${score}`);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -151,6 +179,10 @@ export default function StageUploadPage() {
     e.preventDefault();
     const wordCount = typedContent.trim().split(/\s+/).filter(Boolean).length;
     let score = Math.min(100, Math.floor(wordCount / 3));
+    
+    // Save the score to progress context
+    updateStageScore(stageId, score);
+    
     router.push(`/stages/${stageId}/result?score=${score}`);
   };
 

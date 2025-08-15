@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Navigation } from "@/components/navigation";
 import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { StageProgressProvider } from "@/lib/stageProgress";
 
 const geistMono = localFont({
   src: "../../public/fonts/GeistMonoVF.ttf",
@@ -28,10 +29,12 @@ export default function RootLayout({
         <body
           className={`${geistMono.variable} antialiased font-sans`}
         >
-          <Navigation />
-          <main>
-            {children}
-          </main>
+          <StageProgressProvider>
+            <Navigation />
+            <main>
+              {children}
+            </main>
+          </StageProgressProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -17,6 +17,7 @@ interface GradingCategory {
   feedback: string;
   issues?: string[];
   suggestions?: string[];
+  corrections?: string[];
 }
 
 interface AnalysisResult {
@@ -30,6 +31,9 @@ interface AnalysisResult {
   areasForImprovement?: string[];
   rawResponse?: string;
   error?: string;
+  grammarCorrections?: string[];
+  spellingCorrections?: string[];
+  punctuationCorrections?: string[];
 }
 
 interface ApiResponse {
@@ -219,6 +223,94 @@ export default function Home() {
           const feedbackLines = pdf.splitTextToSize(category.feedback, pageWidth - 2 * margin);
           pdf.text(feedbackLines, margin, yPosition);
           yPosition += feedbackLines.length * 4 + 5;
+
+          // Add specific corrections for grammar, spelling, and punctuation
+          if (category.corrections && category.corrections.length > 0) {
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Corrections:', margin, yPosition);
+            yPosition += 5;
+            
+            pdf.setFont('helvetica', 'normal');
+            for (const correction of category.corrections) {
+              if (yPosition > pageHeight - 20) {
+                pdf.addPage();
+                yPosition = margin;
+              }
+              pdf.text(`• ${correction}`, margin + 5, yPosition);
+              yPosition += 4;
+            }
+            yPosition += 5;
+          }
+        }
+      }
+
+      // Add specific corrections section
+      if (result.analysis.grammarCorrections || result.analysis.spellingCorrections || result.analysis.punctuationCorrections) {
+        if (yPosition > pageHeight - 40) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Writing Corrections & Improvements:', margin, yPosition);
+        yPosition += 10;
+
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+
+        // Spelling corrections
+        if (result.analysis.spellingCorrections && result.analysis.spellingCorrections.length > 0) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Spelling Corrections:', margin, yPosition);
+          yPosition += 5;
+          
+          pdf.setFont('helvetica', 'normal');
+          for (const correction of result.analysis.spellingCorrections) {
+            if (yPosition > pageHeight - 20) {
+              pdf.addPage();
+              yPosition = margin;
+            }
+            pdf.text(`• ${correction}`, margin + 5, yPosition);
+            yPosition += 4;
+          }
+          yPosition += 5;
+        }
+
+        // Grammar corrections
+        if (result.analysis.grammarCorrections && result.analysis.grammarCorrections.length > 0) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Grammar Corrections:', margin, yPosition);
+          yPosition += 5;
+          
+          pdf.setFont('helvetica', 'normal');
+          for (const correction of result.analysis.grammarCorrections) {
+            if (yPosition > pageHeight - 20) {
+              pdf.addPage();
+              yPosition = margin;
+            }
+            pdf.text(`• ${correction}`, margin + 5, yPosition);
+            yPosition += 4;
+          }
+          yPosition += 5;
+        }
+
+        // Punctuation corrections
+        if (result.analysis.punctuationCorrections && result.analysis.punctuationCorrections.length > 0) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Punctuation Corrections:', margin, yPosition);
+          yPosition += 5;
+          
+          pdf.setFont('helvetica', 'normal');
+          for (const correction of result.analysis.punctuationCorrections) {
+            if (yPosition > pageHeight - 20) {
+              pdf.addPage();
+              yPosition = margin;
+            }
+            pdf.text(`• ${correction}`, margin + 5, yPosition);
+            yPosition += 4;
+          }
+          yPosition += 5;
         }
       }
 
@@ -279,6 +371,24 @@ export default function Home() {
         <div className="text-center py-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">CKY 5A Grader</h1>
           <p className="text-gray-600 text-lg">Support PDF, DOC, TXT, MD, and image files</p>
+          
+          {/* Enhanced Description */}
+          <div className="mt-4 max-w-2xl mx-auto">
+            <p className="text-sm text-gray-500 mb-2">
+              Advanced AI-powered assessment with comprehensive grammar, spelling, and punctuation analysis
+            </p>
+            <div className="flex justify-center gap-4 text-xs text-gray-400">
+              <span className="flex items-center gap-1">
+                🔤 Spelling (15 marks)
+              </span>
+              <span className="flex items-center gap-1">
+                📚 Grammar (25 marks)
+              </span>
+              <span className="flex items-center gap-1">
+                ✏️ Punctuation (15 marks)
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Upload Card */}
@@ -371,6 +481,60 @@ export default function Home() {
                 </p>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Writing Tips Section */}
+        <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-800">
+              💡 Writing Assessment Guide
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Spelling Tips */}
+              <div className="text-center">
+                <div className="bg-red-100 rounded-full p-3 w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                  <span className="text-2xl">🔤</span>
+                </div>
+                <h4 className="font-semibold text-red-800 mb-2">Spelling (15 marks)</h4>
+                <ul className="text-xs text-red-700 text-left space-y-1">
+                  <li>• Check common misspellings</li>
+                  <li>• Verify word endings</li>
+                  <li>• Use spell-check tools</li>
+                  <li>• Review homophones</li>
+                </ul>
+              </div>
+
+              {/* Grammar Tips */}
+              <div className="text-center">
+                <div className="bg-yellow-100 rounded-full p-3 w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                  <span className="text-2xl">📚</span>
+                </div>
+                <h4 className="font-semibold text-yellow-800 mb-2">Grammar (25 marks)</h4>
+                <ul className="text-xs text-yellow-700 text-left space-y-1">
+                  <li>• Subject-verb agreement</li>
+                  <li>• Tense consistency</li>
+                  <li>• Sentence structure</li>
+                  <li>• Parts of speech</li>
+                </ul>
+              </div>
+
+              {/* Punctuation Tips */}
+              <div className="text-center">
+                <div className="bg-blue-100 rounded-full p-3 w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                  <span className="text-2xl">✏️</span>
+                </div>
+                <h4 className="font-semibold text-blue-800 mb-2">Punctuation (15 marks)</h4>
+                <ul className="text-xs text-blue-700 text-left space-y-1">
+                  <li>• Commas and periods</li>
+                  <li>• Apostrophes</li>
+                  <li>• Capitalization</li>
+                  <li>• Quotation marks</li>
+                </ul>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -496,26 +660,76 @@ export default function Home() {
                         
                         <p className="text-sm text-gray-700 mb-3">{category.feedback}</p>
                         
-                        {category.issues && category.issues.length > 0 && (
-                          <div className="mb-3">
-                            <p className="text-sm font-medium text-red-600 mb-1">Issues Found:</p>
-                            <ul className="text-sm text-red-700 list-disc list-inside">
-                              {category.issues.map((issue, i) => (
-                                <li key={i}>{issue}</li>
-                              ))}
-                            </ul>
+                        {/* Grammar, Spelling, and Punctuation Specific Feedback */}
+                        {(category.category === 'Grammar' || category.category === 'Spelling' || category.category === 'Punctuation') && (
+                          <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <h5 className="text-sm font-medium text-blue-800 mb-2">
+                              📝 {category.category} Analysis
+                            </h5>
+                            
+                            {/* Issues Found */}
+                            {category.issues && category.issues.length > 0 && (
+                              <div className="mb-3">
+                                <p className="text-sm font-medium text-red-600 mb-1">Issues Found:</p>
+                                <ul className="text-sm text-red-700 list-disc list-inside space-y-1">
+                                  {category.issues.map((issue, i) => (
+                                    <li key={i}>{issue}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Specific Corrections */}
+                            {category.corrections && category.corrections.length > 0 && (
+                              <div className="mb-3">
+                                <p className="text-sm font-medium text-green-600 mb-1">Corrections:</p>
+                                <ul className="text-sm text-green-700 list-disc list-inside space-y-1">
+                                  {category.corrections.map((correction, i) => (
+                                    <li key={i} className="font-mono">{correction}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Suggestions */}
+                            {category.suggestions && category.suggestions.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium text-blue-600 mb-1">Improvement Suggestions:</p>
+                                <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
+                                  {category.suggestions.map((suggestion, i) => (
+                                    <li key={i}>{suggestion}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
                           </div>
                         )}
                         
-                        {category.suggestions && category.suggestions.length > 0 && (
-                          <div>
-                            <p className="text-sm font-medium text-blue-600 mb-1">Suggestions:</p>
-                            <ul className="text-sm text-blue-700 list-disc list-inside">
-                              {category.suggestions.map((suggestion, i) => (
-                                <li key={i}>{suggestion}</li>
-                              ))}
-                            </ul>
-                          </div>
+                        {/* Other Categories */}
+                        {category.category !== 'Grammar' && category.category !== 'Spelling' && category.category !== 'Punctuation' && (
+                          <>
+                            {category.issues && category.issues.length > 0 && (
+                              <div className="mb-3">
+                                <p className="text-sm font-medium text-red-600 mb-1">Issues Found:</p>
+                                <ul className="text-sm text-red-700 list-disc list-inside">
+                                  {category.issues.map((issue, i) => (
+                                    <li key={i}>{issue}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {category.suggestions && category.suggestions.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium text-blue-600 mb-1">Suggestions:</p>
+                                <ul className="text-sm text-blue-700 list-disc list-inside">
+                                  {category.suggestions.map((suggestion, i) => (
+                                    <li key={i}>{suggestion}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     ))}
@@ -555,6 +769,80 @@ export default function Home() {
                   </div>
                 )}
               </div>
+
+              {/* Grammar, Spelling, and Punctuation Corrections */}
+              {(result.analysis.grammarCorrections || result.analysis.spellingCorrections || result.analysis.punctuationCorrections) && (
+                <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-purple-800">
+                      📝 Writing Corrections & Improvements
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Spelling Corrections */}
+                    {result.analysis.spellingCorrections && result.analysis.spellingCorrections.length > 0 && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <h5 className="font-medium text-red-800 mb-2 flex items-center gap-2">
+                          🔤 Spelling Corrections ({result.analysis.spellingCorrections.length} found)
+                        </h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {result.analysis.spellingCorrections.map((correction, i) => (
+                            <div key={i} className="text-sm font-mono bg-white px-2 py-1 rounded border">
+                              {correction}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Grammar Corrections */}
+                    {result.analysis.grammarCorrections && result.analysis.grammarCorrections.length > 0 && (
+                      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <h5 className="font-medium text-yellow-800 mb-2 flex items-center gap-2">
+                          📚 Grammar Corrections ({result.analysis.grammarCorrections.length} found)
+                        </h5>
+                        <div className="space-y-2">
+                          {result.analysis.grammarCorrections.map((correction, i) => (
+                            <div key={i} className="text-sm bg-white px-3 py-2 rounded border">
+                              {correction}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Punctuation Corrections */}
+                    {result.analysis.punctuationCorrections && result.analysis.punctuationCorrections.length > 0 && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h5 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                          ✏️ Punctuation Corrections ({result.analysis.punctuationCorrections.length} found)
+                        </h5>
+                        <div className="space-y-2">
+                          {result.analysis.punctuationCorrections.map((correction, i) => (
+                            <div key={i} className="text-sm bg-white px-3 py-2 rounded border">
+                              {correction}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Writing Tips */}
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <h5 className="font-medium text-green-800 mb-2 flex items-center gap-2">
+                          💡 Writing Improvement Tips
+                        </h5>
+                        <ul className="text-sm text-green-700 list-disc list-inside space-y-1">
+                          <li>Always proofread your work before submitting</li>
+                          <li>Use spell-check tools to catch spelling errors</li>
+                          <li>Read your writing aloud to check for grammar issues</li>
+                          <li>Pay attention to punctuation rules, especially commas and apostrophes</li>
+                          <li>Maintain consistent tense throughout your writing</li>
+                        </ul>
+                      </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Extracted Text */}
               {result.analysis.textExtracted && (
