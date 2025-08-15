@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { Menu, Home, Trophy, DollarSign } from 'lucide-react';
+import { Menu, Home, Trophy, DollarSign, Dumbbell, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigationItems = [
@@ -15,9 +15,19 @@ const navigationItems = [
     icon: Home,
   },
   {
+    name: 'Exercise',
+    href: '/exercise',
+    icon: Dumbbell,
+  },
+  {
     name: 'Leaderboard',
     href: '/leaderboard',
     icon: Trophy,
+  },
+  {
+    name: 'My Profile',
+    href: '/profile',
+    icon: User,
   },
   {
     name: 'Pricing',

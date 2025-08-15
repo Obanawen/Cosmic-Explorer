@@ -13,10 +13,16 @@ export default function LandingPage() {
           <Image src="/globe.svg" alt="Logo" width={40} height={40} />
           <span className="text-2xl font-bold text-green-600">Cosmic Explorer</span>
         </div>
-        {/* Stages Link */}
-        <div className="flex-1 flex justify-center">
+        {/* Stages, Exercise, Leaderboard Links */}
+        <div className="flex-1 flex justify-center space-x-8">
           <Link href="/stages" className="text-lg font-semibold text-gray-700 hover:text-green-600 transition-colors">
             Stages
+          </Link>
+          <Link href="/exercise" className="text-lg font-semibold text-gray-700 hover:text-green-600 transition-colors">
+            Exercise
+          </Link>
+          <Link href="/leaderboard" className="text-lg font-semibold text-gray-700 hover:text-green-600 transition-colors">
+            Leaderboard
           </Link>
         </div>
         {/* Site Language */}
