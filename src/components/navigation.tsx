@@ -7,33 +7,44 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Menu, Home, Trophy, DollarSign, Dumbbell, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 
 const navigationItems = [
-  {
-    name: 'Home',
-    href: '/',
-    icon: Home,
-  },
-  {
-    name: 'Exercise',
-    href: '/exercise',
-    icon: Dumbbell,
-  },
-  {
-    name: 'Leaderboard',
-    href: '/leaderboard',
-    icon: Trophy,
-  },
-  {
-    name: 'My Profile',
-    href: '/profile',
-    icon: User,
-  },
-  {
-    name: 'Pricing',
-    href: '/pricing',
-    icon: DollarSign,
-  },
+	{
+		name: 'Home',
+		href: '/',
+		icon: Home,
+	},
+	{
+		name: 'Stages',
+		href: '/stages',
+		icon: Trophy,
+	},
+	{
+		name: 'Competition',
+		href: '/competition',
+		icon: DollarSign,
+	},
+	{
+		name: 'Exercise',
+		href: '/exercise',
+		icon: Dumbbell,
+	},
+	{
+		name: 'Leaderboard',
+		href: '/leaderboard',
+		icon: Trophy,
+	},
+	{
+		name: 'Pricing',
+		href: '/pricing',
+		icon: DollarSign,
+	},
+	{
+		name: 'My Profile',
+		href: '/profile',
+		icon: User,
+	},
 ];
 
 export function Navigation() {
@@ -77,6 +88,20 @@ export function Navigation() {
               <NavLink key={item.name} item={item} />
             ))}
           </nav>
+          {/* Authentication Buttons Desktop */}
+          <div className="hidden md:flex items-center ml-4 space-x-2">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button variant="outline">Sign In</Button>
+              </SignInButton>
+              <Link href="/signup">
+                <Button variant="default">Sign Up</Button>
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+          </div>
 
           {/* Mobile Navigation */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -110,6 +135,20 @@ export function Navigation() {
                   {navigationItems.map((item) => (
                     <NavLink key={item.name} item={item} className="w-full justify-start" />
                   ))}
+                  {/* Authentication Buttons Mobile */}
+                  <div className="mt-4 space-y-2">
+                    <SignedOut>
+                      <SignInButton mode="modal">
+                        <Button variant="outline" className="w-full">Sign In</Button>
+                      </SignInButton>
+                      <Link href="/signup">
+                        <Button variant="default" className="w-full">Sign Up</Button>
+                      </Link>
+                    </SignedOut>
+                    <SignedIn>
+                      <UserButton afterSignOutUrl="/" />
+                    </SignedIn>
+                  </div>
                 </nav>
               </div>
             </SheetContent>

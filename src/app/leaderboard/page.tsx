@@ -20,10 +20,10 @@ const leaderboardData: LeaderboardEntry[] = [
   { rank: 4, name: "Michael Chang", score: 9580, grade: "A", submissions: 41, averageScore: 91.5 },
   { rank: 5, name: "Jessica Park", score: 9520, grade: "A", submissions: 33, averageScore: 91.2 },
   { rank: 6, name: "David Kim", score: 9450, grade: "A", submissions: 39, averageScore: 90.8 },
-  { rank: 7, name: "Sophie Williams", score: 9380, grade: "A-", submissions: 36, averageScore: 90.3 },
-  { rank: 8, name: "James Johnson", score: 9320, grade: "A-", submissions: 44, averageScore: 89.9 },
-  { rank: 9, name: "Maria Garcia", score: 9250, grade: "A-", submissions: 31, averageScore: 89.5 },
-  { rank: 10, name: "Ryan Brown", score: 9180, grade: "A-", submissions: 37, averageScore: 89.1 },
+  { rank: 7, name: "Sophie Williams", score: 9380, grade: "B", submissions: 36, averageScore: 90.3 },
+  { rank: 8, name: "James Johnson", score: 9320, grade: "B", submissions: 44, averageScore: 89.9 },
+  { rank: 9, name: "Maria Garcia", score: 9250, grade: "B", submissions: 31, averageScore: 89.5 },
+  { rank: 10, name: "Ryan Brown", score: 9180, grade: "B", submissions: 37, averageScore: 89.1 },
 ];
 
 const getRankIcon = (rank: number) => {
@@ -40,11 +40,14 @@ const getRankIcon = (rank: number) => {
 };
 
 const getGradeBadgeColor = (grade: string) => {
-  if (grade.startsWith('A+')) return 'bg-green-100 text-green-800';
-  if (grade.startsWith('A')) return 'bg-blue-100 text-blue-800';
-  if (grade.startsWith('B')) return 'bg-yellow-100 text-yellow-800';
-  if (grade.startsWith('C')) return 'bg-orange-100 text-orange-800';
-  return 'bg-red-100 text-red-800';
+  if (grade === 'A+') return 'bg-purple-100 text-purple-800 border-purple-300';
+  if (grade === 'A') return 'bg-green-100 text-green-800 border-green-300';
+  if (grade === 'B') return 'bg-blue-100 text-blue-800 border-blue-300';
+  if (grade === 'C') return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+  if (grade === 'D') return 'bg-orange-100 text-orange-800 border-orange-300';
+  if (grade === 'E') return 'bg-red-100 text-red-800 border-red-300';
+  if (grade === 'F') return 'bg-red-200 text-red-900 border-red-400';
+  return 'bg-gray-100 text-gray-800 border-gray-300';
 };
 
 const getRankStyle = (rank: number) => {
