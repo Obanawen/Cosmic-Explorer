@@ -65,12 +65,12 @@ export default function StagesPage() {
   const milestoneMessage = getMilestoneMessage(unlockedStages.length);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen p-4 ">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">Space Stages</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-white">Space Stages</h1>
         
         {/* Progress Summary */}
-        <div className="mb-6 p-4 bg-white bg-opacity-80 rounded-lg shadow">
+        <div className="mb-6 p-4 bg-white/80 backdrop-blur-sm rounded-lg shadow">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-semibold">Your Progress</h2>
             <Badge variant="secondary" className="text-sm">
@@ -89,7 +89,7 @@ export default function StagesPage() {
           </div>
           
           {/* Motivational Message */}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
+          <div className="p-3 bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-lg mb-3">
             <p className="text-sm text-blue-800 font-medium text-center">
               {getProgressMessage()}
             </p>
@@ -97,7 +97,7 @@ export default function StagesPage() {
 
           {/* Milestone Message */}
           {milestoneMessage && (
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-3">
+            <div className="p-3 bg-yellow-50/80 backdrop-blur-sm border border-yellow-200 rounded-lg mb-3">
               <div className="flex items-center justify-center gap-2 text-yellow-800">
                 <Star className="h-4 w-4" />
                 <span className="text-sm font-medium">{milestoneMessage}</span>
@@ -133,7 +133,7 @@ export default function StagesPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-h-[70vh] overflow-y-auto p-2 bg-white bg-opacity-70 rounded-lg shadow">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-h-[70vh] overflow-y-auto p-2 bg-white/70 backdrop-blur-sm rounded-lg shadow">
           {stages.map((stage, idx) => {
             const stageId = idx + 1;
             const isUnlocked = isStageUnlocked(stageId);
@@ -148,7 +148,7 @@ export default function StagesPage() {
                     <Button 
                       variant="outline" 
                       className={`flex flex-col items-start p-4 h-auto min-h-[100px] text-left whitespace-normal shadow hover:shadow-lg transition w-full ${
-                        hasPassed ? 'border-green-500 bg-green-50' : 'border-gray-300'
+                        hasPassed ? 'border-green-500 bg-green-50/80 backdrop-blur-sm' : 'border-gray-300'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
@@ -190,7 +190,7 @@ export default function StagesPage() {
                     <Button 
                       variant="outline" 
                       disabled
-                      className="flex flex-col items-start p-4 h-auto min-h-[100px] text-left whitespace-normal w-full opacity-60 cursor-not-allowed bg-gray-100"
+                      className="flex flex-col items-start p-4 h-auto min-h-[100px] text-left whitespace-normal w-full opacity-60 cursor-not-allowed bg-gray-100/80 backdrop-blur-sm"
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Lock className="h-5 w-5 text-gray-500" />

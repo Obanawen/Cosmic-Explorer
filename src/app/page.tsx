@@ -364,179 +364,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen p-4">
       <WebsiteSlide />
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center py-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">CKY 5A Grader</h1>
-          <p className="text-gray-600 text-lg">Support PDF, DOC, TXT, MD, and image files</p>
-          
-          {/* Enhanced Description */}
-          <div className="mt-4 max-w-2xl mx-auto">
-            <p className="text-sm text-gray-500 mb-2">
-              Advanced AI-powered assessment with comprehensive grammar, spelling, and punctuation analysis
-            </p>
-            <div className="flex justify-center gap-4 text-xs text-gray-400">
-              <span className="flex items-center gap-1">
-                🔤 Spelling (15 marks)
-              </span>
-              <span className="flex items-center gap-1">
-                📚 Grammar (25 marks)
-              </span>
-              <span className="flex items-center gap-1">
-                ✏️ Punctuation (15 marks)
-              </span>
-            </div>
-          </div>
-        </div>
 
-        {/* Upload Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Upload Document or Image
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* File Drop Zone */}
-            <div
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
-                dragActive 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onClick={handleDropZoneClick}
-            >
-              <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <div className="space-y-2">
-                <p className="text-lg font-medium text-gray-900">
-                  Drop your file here, or click to browse
-                </p>
-                <p className="text-sm text-gray-500">
-                  Supports PDF, DOC, TXT, MD files, and images (single image only)
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  💡 Large images (&gt;1MB) are automatically optimized for faster processing
-                </p>
-              </div>
-              <Input
-                id="file-upload"
-                type="file"
-                accept=".pdf,.doc,.docx,.txt,.md,.jpg,.jpeg,.png,.gif,.webp,.bmp"
-                onChange={handleFileInputChange}
-                className="hidden"
-              />
-              <Button 
-                variant="outline" 
-                className="mt-4"
-                type="button"
-              >
-                Browse Files
-              </Button>
-            </div>
 
-            {/* Selected File Info */}
-            {file && (
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <FileImage className="h-8 w-8 text-blue-500" />
-                  <div>
-                    <p className="font-medium text-gray-900">{file.name}</p>
-                    <p className="text-sm text-gray-500">{formatFileSize(file.size)}</p>
-                  </div>
-                </div>
-                <Button
-                  onClick={uploadAndAnalyze}
-                  disabled={uploading}
-                  className="min-w-[120px]"
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Award className="h-4 w-4 mr-2" />
-                      Analyze File
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
 
-            {/* Progress Bar */}
-            {uploading && (
-              <div className="space-y-2">
-                <div className="w-full">
-                  <Progress value={50} />
-                </div>
-                <p className="text-sm text-gray-500 text-center">
-                  Analyzing content with AI grading system...
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Writing Tips Section */}
-        <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-800">
-              💡 Writing Assessment Guide
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Spelling Tips */}
-              <div className="text-center">
-                <div className="bg-red-100 rounded-full p-3 w-16 h-16 mx-auto mb-3 flex items-center justify-center">
-                  <span className="text-2xl">🔤</span>
-                </div>
-                <h4 className="font-semibold text-red-800 mb-2">Spelling (15 marks)</h4>
-                <ul className="text-xs text-red-700 text-left space-y-1">
-                  <li>• Check common misspellings</li>
-                  <li>• Verify word endings</li>
-                  <li>• Use spell-check tools</li>
-                  <li>• Review homophones</li>
-                </ul>
-              </div>
-
-              {/* Grammar Tips */}
-              <div className="text-center">
-                <div className="bg-yellow-100 rounded-full p-3 w-16 h-16 mx-auto mb-3 flex items-center justify-center">
-                  <span className="text-2xl">📚</span>
-                </div>
-                <h4 className="font-semibold text-yellow-800 mb-2">Grammar (25 marks)</h4>
-                <ul className="text-xs text-yellow-700 text-left space-y-1">
-                  <li>• Subject-verb agreement</li>
-                  <li>• Tense consistency</li>
-                  <li>• Sentence structure</li>
-                  <li>• Parts of speech</li>
-                </ul>
-              </div>
-
-              {/* Punctuation Tips */}
-              <div className="text-center">
-                <div className="bg-blue-100 rounded-full p-3 w-16 h-16 mx-auto mb-3 flex items-center justify-center">
-                  <span className="text-2xl">✏️</span>
-                </div>
-                <h4 className="font-semibold text-blue-800 mb-2">Punctuation (15 marks)</h4>
-                <ul className="text-xs text-blue-700 text-left space-y-1">
-                  <li>• Commas and periods</li>
-                  <li>• Apostrophes</li>
-                  <li>• Capitalization</li>
-                  <li>• Quotation marks</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Error Alert */}
         {error && (
@@ -567,7 +400,7 @@ export default function Home() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* File Info */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50/80 backdrop-blur-sm rounded-lg">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Filename</p>
                   <p className="text-sm text-gray-900">{result.filename}</p>
@@ -588,7 +421,7 @@ export default function Home() {
 
               {/* Optimization Info */}
               {result.optimization && result.optimization.wasOptimized && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="p-4 bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="h-2 w-2 bg-green-500 rounded-full"></div>
                     <p className="text-sm font-medium text-green-800">Image Automatically Optimized</p>
@@ -602,7 +435,7 @@ export default function Home() {
 
               {/* Large file warning */}
               {file && file.size > 5 * 1024 * 1024 && (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="p-4 bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
                     <p className="text-sm font-medium text-blue-800">Large File Detected</p>
@@ -615,7 +448,7 @@ export default function Home() {
 
               {/* Overall Score */}
               {result.analysis.totalScore !== undefined && (
-                <div className="text-center p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+                <div className="text-center p-6 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 backdrop-blur-sm rounded-lg">
                   <div className="flex items-center justify-center gap-4 mb-4">
                     <div className="text-center">
                       <p className="text-4xl font-bold text-gray-900">
@@ -643,7 +476,7 @@ export default function Home() {
                   <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
                   <div className="space-y-4">
                     {result.analysis.categories.map((category, index) => (
-                      <div key={index} className="border rounded-lg p-4 bg-white">
+                      <div key={index} className="border rounded-lg p-4 bg-white/90 backdrop-blur-sm">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium text-gray-900">{category.category}</h4>
                           <div className="flex items-center gap-2">
@@ -662,7 +495,7 @@ export default function Home() {
                         
                         {/* Grammar, Spelling, and Punctuation Specific Feedback */}
                         {(category.category === 'Grammar' || category.category === 'Spelling' || category.category === 'Punctuation') && (
-                          <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                                      <div className="mb-3 p-3 bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-lg">
                             <h5 className="text-sm font-medium text-blue-800 mb-2">
                               📝 {category.category} Analysis
                             </h5>
@@ -739,7 +572,7 @@ export default function Home() {
 
               {/* Overall Feedback */}
               {result.analysis.overallFeedback && (
-                <div className="p-4 bg-blue-50 rounded-lg">
+                <div className="p-4 bg-blue-50/80 backdrop-blur-sm rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-2">Overall Feedback</h4>
                   <p className="text-blue-800">{result.analysis.overallFeedback}</p>
                 </div>
@@ -748,7 +581,7 @@ export default function Home() {
               {/* Strengths and Areas for Improvement */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {result.analysis.strengths && result.analysis.strengths.length > 0 && (
-                  <div className="p-4 bg-green-50 rounded-lg">
+                  <div className="p-4 bg-green-50/80 backdrop-blur-sm rounded-lg">
                     <h4 className="font-medium text-green-900 mb-2">Strengths</h4>
                     <ul className="text-sm text-green-800 list-disc list-inside space-y-1">
                       {result.analysis.strengths.map((strength, i) => (
@@ -759,7 +592,7 @@ export default function Home() {
                 )}
                 
                 {result.analysis.areasForImprovement && result.analysis.areasForImprovement.length > 0 && (
-                  <div className="p-4 bg-orange-50 rounded-lg">
+                  <div className="p-4 bg-orange-50/80 backdrop-blur-sm rounded-lg">
                     <h4 className="font-medium text-orange-900 mb-2">Areas for Improvement</h4>
                     <ul className="text-sm text-orange-800 list-disc list-inside space-y-1">
                       {result.analysis.areasForImprovement.map((area, i) => (
@@ -772,7 +605,7 @@ export default function Home() {
 
               {/* Grammar, Spelling, and Punctuation Corrections */}
               {(result.analysis.grammarCorrections || result.analysis.spellingCorrections || result.analysis.punctuationCorrections) && (
-                <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+                <Card className="bg-gradient-to-r from-purple-50/80 to-blue-50/80 backdrop-blur-sm border-purple-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-purple-800">
                       📝 Writing Corrections & Improvements
@@ -781,7 +614,7 @@ export default function Home() {
                   <CardContent className="space-y-4">
                     {/* Spelling Corrections */}
                     {result.analysis.spellingCorrections && result.analysis.spellingCorrections.length > 0 && (
-                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="p-3 bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-lg">
                         <h5 className="font-medium text-red-800 mb-2 flex items-center gap-2">
                           🔤 Spelling Corrections ({result.analysis.spellingCorrections.length} found)
                         </h5>
@@ -797,7 +630,7 @@ export default function Home() {
 
                     {/* Grammar Corrections */}
                     {result.analysis.grammarCorrections && result.analysis.grammarCorrections.length > 0 && (
-                      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="p-3 bg-yellow-50/80 backdrop-blur-sm border border-yellow-200 rounded-lg">
                         <h5 className="font-medium text-yellow-800 mb-2 flex items-center gap-2">
                           📚 Grammar Corrections ({result.analysis.grammarCorrections.length} found)
                         </h5>
@@ -813,7 +646,7 @@ export default function Home() {
 
                     {/* Punctuation Corrections */}
                     {result.analysis.punctuationCorrections && result.analysis.punctuationCorrections.length > 0 && (
-                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="p-3 bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-lg">
                         <h5 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
                           ✏️ Punctuation Corrections ({result.analysis.punctuationCorrections.length} found)
                         </h5>
@@ -828,7 +661,7 @@ export default function Home() {
                     )}
 
                     {/* Writing Tips */}
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="p-3 bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-lg">
                       <h5 className="font-medium text-green-800 mb-2 flex items-center gap-2">
                           💡 Writing Improvement Tips
                         </h5>
