@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import * as mammoth from 'mammoth';
+import fs from 'fs';
 
 // Create OpenAI client lazily to avoid build-time errors
 function getOpenAIClient() {
@@ -160,8 +161,73 @@ async function extractTextFromFile(file: File): Promise<string> {
   }
 }
 
+// Dictionary cache for local spellcheck
+let englishWordsSet: Set<string> | null = null;
+async function ensureEnglishDictionary(): Promise<Set<string> | null> {
+  if (englishWordsSet) return englishWordsSet;
+  try {
+    const wordListPath = (await import('word-list')).default as unknown as string;
+    const content = fs.readFileSync(wordListPath, 'utf-8');
+    const words = content.split('\n').filter(Boolean);
+    englishWordsSet = new Set(words);
+    return englishWordsSet;
+  } catch (e) {
+    console.warn('English dictionary not available; proceeding without it');
+    englishWordsSet = null;
+    return null;
+  }
+}
+
+// Damerau-Levenshtein distance for suggestions (lightweight)
+function editDistance(a: string, b: string): number {
+  const al = a.length;
+  const bl = b.length;
+  const dp: number[][] = Array.from({ length: al + 1 }, () => Array(bl + 1).fill(0));
+  for (let i = 0; i <= al; i++) dp[i][0] = i;
+  for (let j = 0; j <= bl; j++) dp[0][j] = j;
+  for (let i = 1; i <= al; i++) {
+    for (let j = 1; j <= bl; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        dp[i][j] = Math.min(dp[i][j], dp[i - 2][j - 2] + cost);
+      }
+    }
+  }
+  return dp[al][bl];
+}
+
+function suggestFromDictionary(word: string, dict: Set<string>): string | null {
+  const prefix = word.slice(0, 2);
+  const candidates: string[] = [];
+  let count = 0;
+  for (const w of dict) {
+    if (w.startsWith(prefix)) {
+      candidates.push(w);
+      count++;
+      if (count >= 400) break;
+    }
+  }
+  if (candidates.length === 0) return null;
+  let best: string | null = null;
+  let bestDist = Infinity;
+  for (const c of candidates) {
+    const d = editDistance(word, c);
+    if (d < bestDist) {
+      bestDist = d;
+      best = c;
+      if (d === 1) break;
+    }
+  }
+  return bestDist <= 3 ? best : null;
+}
+
 // Basic local heuristic analyzer used when no OpenRouter API key is configured
-function localAnalyzeText(text: string) {
+async function localAnalyzeText(text: string) {
   const cleaned = text.trim();
   const words = cleaned.split(/\s+/).filter(Boolean);
   const wordCount = words.length;
@@ -186,8 +252,29 @@ function localAnalyzeText(text: string) {
       spellingCorrections.push(`${wrong} → ${right}`);
     }
   }
+  // Dictionary-driven extra spelling checks
+  const dict = await ensureEnglishDictionary();
+  if (dict) {
+    const alphaWordRegex = /^[a-zA-Z]+$/;
+    const normalized = words.map(w => w.replace(/[^a-zA-Z']/g, '').toLowerCase()).filter(Boolean);
+    const seen = new Set<string>();
+    for (const w of normalized) {
+      if (w.length <= 2) continue;
+      if (!alphaWordRegex.test(w)) continue;
+      if (seen.has(w)) continue;
+      seen.add(w);
+      if (!dict.has(w)) {
+        spellingIssues.push(`Possibly misspelled: '${w}'`);
+        const suggestion = suggestFromDictionary(w, dict);
+        if (suggestion) spellingCorrections.push(`${w} → ${suggestion}`);
+      }
+      if (spellingIssues.length >= 30) break;
+    }
+  }
   const spellingErrorsCount = spellingIssues.length;
-  const spellingScore = Math.max(0, 15 - Math.min(6, spellingErrorsCount) * 2);
+  // Harsher: 3 points off per detected common error (cap at 6 errors => 18 off)
+  const cap = dict ? 8 : 6;
+  const spellingScore = Math.max(0, 15 - Math.min(cap, spellingErrorsCount) * 3);
 
   // Heuristic grammar: penalize long sentences and multiple consecutive spaces
   const longSentences = sentences.filter(s => s.trim().split(/\s+/).length > 25).length;
@@ -199,12 +286,14 @@ function localAnalyzeText(text: string) {
   const grammarCorrections: string[] = [];
   if (longSentences) grammarCorrections.push('Split long sentences into shorter ones for clarity');
   if (multiSpaces) grammarCorrections.push('Reduce multiple spaces to single spaces');
-  const grammarPenalty = longSentences * 3 + multiSpaces * 2;
-  const grammarScore = Math.max(0, 25 - Math.min(20, grammarPenalty));
+  // Harsher grammar penalties
+  const grammarPenalty = longSentences * 5 + multiSpaces * 3;
+  const grammarScore = Math.max(0, 25 - Math.min(25, grammarPenalty));
 
   // Heuristic punctuation: check missing terminal punctuation and comma overuse
   const endsWithPunct = /[.!?]$/.test(cleaned);
-  const manyCommas = (cleaned.match(/,/g) || []).length > Math.max(3, sentences.length);
+  const manyCommas = (cleaned.match(/,/g) || []).length > Math.max(3, Math.ceil(sentences.length * 0.8));
+  const manyExclaims = /!!+/.test(cleaned);
   const punctuationIssues: string[] = [];
   const punctuationCorrections: string[] = [];
   if (!endsWithPunct && cleaned.length > 0) {
@@ -215,18 +304,24 @@ function localAnalyzeText(text: string) {
     punctuationIssues.push('Possible comma overuse');
     punctuationCorrections.push('Review comma usage; consider periods or semicolons');
   }
-  const punctuationPenalty = (endsWithPunct ? 0 : 3) + (manyCommas ? 2 : 0);
+  if (manyExclaims) {
+    punctuationIssues.push('Excessive exclamation marks');
+    punctuationCorrections.push('Limit exclamation marks to emphasize only key points');
+  }
+  // Harsher punctuation penalties
+  const punctuationPenalty = (endsWithPunct ? 0 : 5) + (manyCommas ? 4 : 0) + (manyExclaims ? 3 : 0);
   const punctuationScore = Math.max(0, 15 - punctuationPenalty);
 
   // Length scoring
-  const lengthScore = wordCount < 50 ? 3 : wordCount <= 300 ? 10 : 6;
+  // Harsher length scoring for very short content
+  const lengthScore = wordCount < 50 ? 2 : wordCount <= 120 ? 8 : wordCount <= 300 ? 10 : 6;
 
   // Vocabulary/wording heuristic: average word length and unique ratio
   const avgWordLen = words.reduce((a, w) => a + w.length, 0) / (words.length || 1);
   const uniqueRatio = new Set(words.map(w => w.toLowerCase())).size / (words.length || 1);
   let vocabScore = 15;
-  if (avgWordLen < 3.8) vocabScore -= 3;
-  if (uniqueRatio < 0.35) vocabScore -= 3;
+  if (avgWordLen < 4.0) vocabScore -= 5;
+  if (uniqueRatio < 0.30) vocabScore -= 4;
   vocabScore = Math.max(5, Math.min(15, Math.round(vocabScore)));
 
   // Content quality heuristic: sentence count and crude coherence proxy
