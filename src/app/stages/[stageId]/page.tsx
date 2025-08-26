@@ -163,6 +163,15 @@ export default function StageUploadPage() {
       }
       setResult(data);
       
+      // Persist detailed analysis for the result page
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(`stage_${stageId}_analysis`, JSON.stringify(data));
+        }
+      } catch {
+        // ignore storage errors
+      }
+
       // Extract score from analysis result and save it
       if (data.analysis && typeof data.analysis.totalScore === 'number') {
         const score = data.analysis.totalScore;

@@ -37,6 +37,22 @@ export default function StageResultPage() {
   const completionMessage = getStageCompletionMessage(score, stageId);
   const gradeEncouragement = getGradeEncouragement(grade);
   const milestoneMessage = getMilestoneMessage(stageId);
+  const [analysis, setAnalysis] = useState<any | null>(null);
+
+  // Load detailed analysis stored from the stage page
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = sessionStorage.getItem(`stage_${stageId}_analysis`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          setAnalysis(parsed.analysis || null);
+        }
+      }
+    } catch {
+      setAnalysis(null);
+    }
+  }, [stageId]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -59,6 +75,97 @@ export default function StageResultPage() {
             Grade: {grade}
           </Badge>
         </div>
+
+        {/* Grammar, Spelling, Punctuation Breakdown */}
+        {analysis && (
+          <div className="text-left space-y-4 mb-6">
+            {/* Categories */}
+            {Array.isArray(analysis.categories) && analysis.categories.length > 0 && (
+              <div className="p-4 bg-gray-50 rounded-lg border">
+                <h3 className="font-semibold mb-3">Category Breakdown</h3>
+                <div className="space-y-3">
+                  {analysis.categories.map((cat: any, idx: number) => (
+                    <div key={idx} className="p-3 bg-white rounded border">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium">{cat.category}</span>
+                        <Badge variant="secondary">{cat.score}/{cat.maxScore}</Badge>
+                      </div>
+                      {cat.feedback && (
+                        <p className="text-sm text-gray-700 mb-2">{cat.feedback}</p>
+                      )}
+                      {Array.isArray(cat.issues) && cat.issues.length > 0 && (
+                        <div className="mb-2">
+                          <p className="text-sm font-medium text-red-700">Issues:</p>
+                          <ul className="text-sm text-red-700 list-disc list-inside">
+                            {cat.issues.map((i: string, j: number) => (
+                              <li key={j}>{i}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {Array.isArray(cat.corrections) && cat.corrections.length > 0 && (
+                        <div className="mb-2">
+                          <p className="text-sm font-medium text-green-700">Corrections:</p>
+                          <ul className="text-sm text-green-700 list-disc list-inside">
+                            {cat.corrections.map((c: string, j: number) => (
+                              <li key={j} className="font-mono">{c}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {Array.isArray(cat.suggestions) && cat.suggestions.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium text-blue-700">Suggestions:</p>
+                          <ul className="text-sm text-blue-700 list-disc list-inside">
+                            {cat.suggestions.map((s: string, j: number) => (
+                              <li key={j}>{s}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Specific Corrections Summary */}
+            {(analysis.grammarCorrections || analysis.spellingCorrections || analysis.punctuationCorrections) && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {analysis.spellingCorrections && analysis.spellingCorrections.length > 0 && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded">
+                    <h4 className="font-medium text-red-800 mb-1">Spelling Corrections</h4>
+                    <ul className="text-sm text-red-800 list-disc list-inside space-y-1">
+                      {analysis.spellingCorrections.map((c: string, i: number) => (
+                        <li key={i} className="font-mono">{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {analysis.grammarCorrections && analysis.grammarCorrections.length > 0 && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <h4 className="font-medium text-yellow-800 mb-1">Grammar Corrections</h4>
+                    <ul className="text-sm text-yellow-800 list-disc list-inside space-y-1">
+                      {analysis.grammarCorrections.map((c: string, i: number) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {analysis.punctuationCorrections && analysis.punctuationCorrections.length > 0 && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                    <h4 className="font-medium text-blue-800 mb-1">Punctuation Corrections</h4>
+                    <ul className="text-sm text-blue-800 list-disc list-inside space-y-1">
+                      {analysis.punctuationCorrections.map((c: string, i: number) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Motivational Messages */}
         <div className="mb-6 space-y-3">
