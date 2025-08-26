@@ -199,15 +199,43 @@ export default function StageUploadPage() {
   const [typedContent, setTypedContent] = useState('');
   const [typedSubmitted, setTypedSubmitted] = useState(false);
 
-  const handleTypedSubmit = (e: React.FormEvent) => {
+  const handleTypedSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const wordCount = typedContent.trim().split(/\s+/).filter(Boolean).length;
-    const score = Math.min(100, Math.floor(wordCount / 3));
-    
-    // Save the score to progress context
-    updateStageScore(stageId, score);
-    
-    router.push(`/stages/${stageId}/result?score=${score}`);
+    setTypedSubmitted(true);
+    setUploading(true);
+    setError(null);
+    try {
+      // Create a text file from typed content and reuse the same API for consistent analysis
+      const typedFile = new File([typedContent], `stage-${stageId}-typed.txt`, { type: 'text/plain' });
+      const formData = new FormData();
+      formData.append('file', typedFile);
+
+      const response = await fetch('/api/analyze-marks', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to analyze typed content');
+      }
+
+      setResult(data);
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(`stage_${stageId}_analysis`, JSON.stringify(data));
+        }
+      } catch {}
+
+      // Use AI totalScore for consistency with uploaded files
+      const score = data?.analysis?.totalScore ?? 0;
+      updateStageScore(stageId, score);
+      router.push(`/stages/${stageId}/result?score=${score}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
