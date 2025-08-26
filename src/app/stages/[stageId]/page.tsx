@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, BookOpen, FileImage, Loader2, Award, XCircle, CheckCircle, Download } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { useStageProgress } from '@/lib/stageProgress';
-import WritingPrompts from '@/components/WritingPrompts';
 
 const stageNames = [
   'Liftoff', 'Orbit Insertion', 'Lunar Approach', 'Asteroid Belt', 'Solar Flare',
@@ -44,6 +43,21 @@ export default function StageUploadPage() {
   const stageId = Number(params.stageId);
   const stageName = getStageName(stageId);
   const { updateStageScore, isStageUnlocked } = useStageProgress();
+  // Random topic generator (space-themed and general topics)
+  const baseTopics = [
+    'Describe a first contact with an alien species near the ' + stageName,
+    'Write a journal entry from an astronaut during the ' + stageName + ' mission',
+    'Invent a new technology that helps with ' + stageName + ' and explain it',
+    'Debate the ethics of exploring the region known as "' + stageName + '"',
+    'Tell a story about a malfunction during ' + stageName + ' and how it is solved',
+    'Compare life on Earth with life aboard a ship during ' + stageName,
+    'Explain how teamwork is essential to succeed at ' + stageName,
+    'Write a news article reporting the success of ' + stageName,
+    'Argue whether the risk of ' + stageName + ' is worth the reward',
+    'Imagine a student training simulator for ' + stageName + ' and describe a day using it'
+  ];
+  const getRandomTopic = () => baseTopics[Math.floor(Math.random() * baseTopics.length)];
+  const [currentTopic, setCurrentTopic] = useState<string>(getRandomTopic());
 
   // Check if stage is unlocked
   if (!isStageUnlocked(stageId)) {
@@ -194,16 +208,23 @@ export default function StageUploadPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Stage {stageId}: {stageName}</h1>
           <p className="text-gray-600 text-lg">Upload your document or image for this stage, or type your content below.</p>
         </div>
-        {/* Writing Prompts embedded within stage */}
+        {/* Random Topic for this Stage */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
-              Writing Prompts
+              Random Topic for {stageName}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <WritingPrompts />
+          <CardContent className="space-y-3">
+            <div className="p-4 bg-white rounded-lg border text-gray-800">
+              <p className="text-base">{currentTopic}</p>
+            </div>
+            <div className="flex justify-end">
+              <Button type="button" variant="outline" onClick={() => setCurrentTopic(getRandomTopic())}>
+                🎲 New random topic
+              </Button>
+            </div>
           </CardContent>
         </Card>
         <Card>
