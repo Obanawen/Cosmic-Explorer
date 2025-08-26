@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -533,6 +534,52 @@ export default function Home() {
                   <li>• Capitalization</li>
                   <li>• Quotation marks</li>
                 </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Writing Prompts Promotion */}
+        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-purple-800">
+              ✨ Need Writing Inspiration?
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center space-y-4">
+              <p className="text-purple-700">
+                Get creative with our collection of writing prompts and topics
+              </p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Link href="/stages">
+                  <Button variant="default" className="bg-purple-600 hover:bg-purple-700">
+                    🎲 Generate Random Prompts
+                  </Button>
+                </Link>
+                <Link href="/stages">
+                  <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                    📝 Browse All Categories
+                  </Button>
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 text-sm">
+                <div className="text-center">
+                  <span className="text-purple-600 font-medium">Creative Writing</span>
+                  <p className="text-purple-500">Stories & imagination</p>
+                </div>
+                <div className="text-center">
+                  <span className="text-purple-600 font-medium">Academic</span>
+                  <p className="text-purple-500">Research & analysis</p>
+                </div>
+                <div className="text-center">
+                  <span className="text-purple-600 font-medium">Personal</span>
+                  <p className="text-purple-500">Reflection & growth</p>
+                </div>
+                <div className="text-center">
+                  <span className="text-purple-600 font-medium">Business</span>
+                  <p className="text-purple-500">Professional topics</p>
+                </div>
               </div>
             </div>
           </CardContent>

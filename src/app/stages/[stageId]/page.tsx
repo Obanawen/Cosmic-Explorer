@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, BookOpen, FileImage, Loader2, Award, XCircle, CheckCircle, Download } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { useStageProgress } from '@/lib/stageProgress';
+import WritingPrompts from '@/components/WritingPrompts';
 
 const stageNames = [
   'Liftoff', 'Orbit Insertion', 'Lunar Approach', 'Asteroid Belt', 'Solar Flare',
@@ -193,6 +194,18 @@ export default function StageUploadPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Stage {stageId}: {stageName}</h1>
           <p className="text-gray-600 text-lg">Upload your document or image for this stage, or type your content below.</p>
         </div>
+        {/* Writing Prompts embedded within stage */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Writing Prompts
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <WritingPrompts />
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
