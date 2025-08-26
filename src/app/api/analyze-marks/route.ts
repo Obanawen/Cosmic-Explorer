@@ -160,6 +160,154 @@ async function extractTextFromFile(file: File): Promise<string> {
   }
 }
 
+// Basic local heuristic analyzer used when no OpenRouter API key is configured
+function localAnalyzeText(text: string) {
+  const cleaned = text.trim();
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  const wordCount = words.length;
+  const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 0);
+
+  // Heuristic spelling issues: simple common mistakes list
+  const commonMistakes: Record<string, string> = {
+    recieve: 'receive',
+    occured: 'occurred',
+    seperate: 'separate',
+    definitly: 'definitely',
+    goverment: 'government',
+    beleive: 'believe',
+    enviroment: 'environment',
+  };
+  const spellingIssues: string[] = [];
+  const spellingCorrections: string[] = [];
+  for (const [wrong, right] of Object.entries(commonMistakes)) {
+    const regex = new RegExp(`\\b${wrong}\\b`, 'gi');
+    if (regex.test(cleaned)) {
+      spellingIssues.push(`'${wrong}' should be '${right}'`);
+      spellingCorrections.push(`${wrong} → ${right}`);
+    }
+  }
+  const spellingErrorsCount = spellingIssues.length;
+  const spellingScore = Math.max(0, 15 - Math.min(6, spellingErrorsCount) * 2);
+
+  // Heuristic grammar: penalize long sentences and multiple consecutive spaces
+  const longSentences = sentences.filter(s => s.trim().split(/\s+/).length > 25).length;
+  const multiSpaces = /\s{2,}/.test(cleaned) ? 1 : 0;
+  const grammarIssues = [
+    ...(longSentences ? [`${longSentences} overly long sentence(s)`] : []),
+    ...(multiSpaces ? ['Multiple spaces detected'] : []),
+  ];
+  const grammarCorrections: string[] = [];
+  if (longSentences) grammarCorrections.push('Split long sentences into shorter ones for clarity');
+  if (multiSpaces) grammarCorrections.push('Reduce multiple spaces to single spaces');
+  const grammarPenalty = longSentences * 3 + multiSpaces * 2;
+  const grammarScore = Math.max(0, 25 - Math.min(20, grammarPenalty));
+
+  // Heuristic punctuation: check missing terminal punctuation and comma overuse
+  const endsWithPunct = /[.!?]$/.test(cleaned);
+  const manyCommas = (cleaned.match(/,/g) || []).length > Math.max(3, sentences.length);
+  const punctuationIssues: string[] = [];
+  const punctuationCorrections: string[] = [];
+  if (!endsWithPunct && cleaned.length > 0) {
+    punctuationIssues.push('Text does not end with terminal punctuation');
+    punctuationCorrections.push('Add a period at the end of the last sentence');
+  }
+  if (manyCommas) {
+    punctuationIssues.push('Possible comma overuse');
+    punctuationCorrections.push('Review comma usage; consider periods or semicolons');
+  }
+  const punctuationPenalty = (endsWithPunct ? 0 : 3) + (manyCommas ? 2 : 0);
+  const punctuationScore = Math.max(0, 15 - punctuationPenalty);
+
+  // Length scoring
+  const lengthScore = wordCount < 50 ? 3 : wordCount <= 300 ? 10 : 6;
+
+  // Vocabulary/wording heuristic: average word length and unique ratio
+  const avgWordLen = words.reduce((a, w) => a + w.length, 0) / (words.length || 1);
+  const uniqueRatio = new Set(words.map(w => w.toLowerCase())).size / (words.length || 1);
+  let vocabScore = 15;
+  if (avgWordLen < 3.8) vocabScore -= 3;
+  if (uniqueRatio < 0.35) vocabScore -= 3;
+  vocabScore = Math.max(5, Math.min(15, Math.round(vocabScore)));
+
+  // Content quality heuristic: sentence count and crude coherence proxy
+  const qualityBase = Math.min(10, Math.max(4, Math.round(sentences.length)));
+  const qualityBonus = avgWordLen > 4.5 ? 2 : 0;
+  const contentQuality = Math.max(8, Math.min(20, qualityBase + qualityBonus));
+
+  const categories = [
+    {
+      category: 'Spelling',
+      score: spellingScore,
+      maxScore: 15,
+      feedback: spellingErrorsCount === 0 ? 'No common spelling errors detected' : 'Some common spelling mistakes found',
+      issues: spellingIssues,
+      suggestions: ['Proofread for common patterns', 'Use a spell-check tool'],
+      corrections: spellingCorrections,
+    },
+    {
+      category: 'Grammar',
+      score: grammarScore,
+      maxScore: 25,
+      feedback: grammarIssues.length === 0 ? 'No obvious grammar issues detected' : 'Some sentence-level issues detected',
+      issues: grammarIssues,
+      suggestions: ['Keep sentences concise', 'Maintain consistent spacing'],
+      corrections: grammarCorrections,
+    },
+    {
+      category: 'Punctuation',
+      score: punctuationScore,
+      maxScore: 15,
+      feedback: punctuationIssues.length === 0 ? 'Punctuation looks generally fine' : 'Minor punctuation concerns detected',
+      issues: punctuationIssues,
+      suggestions: ['End sentences with proper punctuation', 'Avoid comma overuse'],
+      corrections: punctuationCorrections,
+    },
+    {
+      category: 'Content Length',
+      score: lengthScore,
+      maxScore: 10,
+      feedback: wordCount < 50 ? 'Too short' : wordCount <= 300 ? 'Appropriate length' : 'Slightly long',
+      issues: [],
+      suggestions: [],
+      corrections: [],
+    },
+    {
+      category: 'Wording and Vocabulary',
+      score: vocabScore,
+      maxScore: 15,
+      feedback: 'Assessed based on average word length and variety',
+      issues: [],
+      suggestions: ['Vary word choice', 'Favor precise terms'],
+      corrections: [],
+    },
+    {
+      category: 'Content Quality',
+      score: contentQuality,
+      maxScore: 20,
+      feedback: 'Estimated from sentence structure and length',
+      issues: [],
+      suggestions: ['Ensure clear flow between sentences'],
+      corrections: [],
+    },
+  ];
+
+  const totalScore = categories.reduce((a, c) => a + (c.score || 0), 0);
+
+  return {
+    textExtracted: cleaned.substring(0, 500) + (cleaned.length > 500 ? '...' : ''),
+    totalScore,
+    maxScore: 100,
+    categories,
+    overallFeedback: 'Local analysis used (no API key). Heuristic evaluation provided for practice.',
+    grade: totalScore >= 85 ? 'A' : totalScore >= 70 ? 'B' : totalScore >= 60 ? 'C' : totalScore >= 50 ? 'D' : 'E',
+    strengths: ['Automatic quick feedback without external API'],
+    areasForImprovement: ['Enable OpenRouter API for higher-fidelity analysis'],
+    grammarCorrections,
+    spellingCorrections,
+    punctuationCorrections,
+  };
+}
+
 async function extractTextFromPDF(buffer: Buffer, fileName: string): Promise<string> {
   try {
     // First, try to extract text directly from PDF (for text-based PDFs)
@@ -513,11 +661,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    if (!process.env.OPENROUTER_API_KEY) {
-      return NextResponse.json({ 
-        error: 'OpenRouter API key not configured. Please add OPENROUTER_API_KEY to your .env.local file.' 
-      }, { status: 500 });
-    }
+    const hasKey = Boolean(process.env.OPENROUTER_API_KEY);
 
     console.log(`Processing file: ${file.name}, type: ${file.type}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
 
@@ -530,6 +674,15 @@ export async function POST(request: NextRequest) {
       // Process image files with Vision API
       console.log('Processing as image file');
       
+      if (!hasKey) {
+        return NextResponse.json({
+          error: 'Image analysis requires OpenRouter API key. For now, upload a text document or enable OPENROUTER_API_KEY.',
+          filename: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+        }, { status: 500 });
+      }
+
       // Check if image is large and show optimization info
       if (file.size > 1024 * 1024) { // Larger than 1MB
         console.log('Large image detected, optimization will be applied automatically');
@@ -562,6 +715,22 @@ export async function POST(request: NextRequest) {
         }, { status: 400 });
       }
       
+      if (!hasKey) {
+        // Use local heuristic analysis
+        const analysisResult = localAnalyzeText(extractedText);
+        const response = {
+          success: true,
+          analysis: analysisResult,
+          filename: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+          provider: 'local',
+          model: 'heuristic',
+          analysisType: 'Document Content Grading (local heuristic)'
+        };
+        return NextResponse.json(response);
+      }
+
       aiResponse = await analyzeTextContent(extractedText);
       analysisType = 'Document Content Grading';
     }
