@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Unlock, Trophy, Star, Target, Rocket, Crown } from 'lucide-react';
 import { useStageProgress } from '@/lib/stageProgress';
-import { scoreToGrade, getGradeColor, getScoreMessage, getMilestoneMessage } from '@/lib/utils';
+import { scoreToGrade, getGradeColor, getScoreMessage, getMilestoneMessage, xpToLevel } from '@/lib/utils';
 
 const stages = Array.from({ length: 100 }, (_, i) => ({
   name: `Stage ${i + 1}: ${spaceStageName(i + 1)}`,
@@ -42,8 +42,9 @@ function spaceStageDescription(n: number) {
 }
 
 export default function StagesPage() {
-  const { stageScores, isStageUnlocked, getUnlockedStages } = useStageProgress();
+  const { stageScores, isStageUnlocked, getUnlockedStages, xpBalance } = useStageProgress();
   const unlockedStages = getUnlockedStages();
+  const levelInfo = xpToLevel(xpBalance);
   
   // Find the next stage that will unlock
   const nextStageToUnlock = unlockedStages.length < 100 ? unlockedStages.length + 1 : null;
@@ -69,13 +70,23 @@ export default function StagesPage() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-center">Space Stages</h1>
         
-        {/* Progress Summary */}
+        {/* Progress Summary + XP */}
         <div className="mb-6 p-4 bg-white bg-opacity-80 rounded-lg shadow">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-semibold">Your Progress</h2>
             <Badge variant="secondary" className="text-sm">
               {unlockedStages.length}/100 Stages Unlocked
             </Badge>
+          </div>
+          {/* XP Bar */}
+          <div className="mb-3">
+            <div className="flex items-center justify-between text-sm text-gray-700 mb-1">
+              <span>Level {levelInfo.level}</span>
+              <span>{levelInfo.current}/{levelInfo.required} XP</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-700" style={{ width: `${levelInfo.progressPct}%` }}></div>
+            </div>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
             <div 

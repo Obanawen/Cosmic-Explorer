@@ -43,7 +43,7 @@ export default function StageUploadPage() {
   const stageId = Number(params.stageId);
   const stageName = getStageName(stageId);
   const { updateStageScore, isStageUnlocked } = useStageProgress();
-  // Random topic generator (space-themed and general topics)
+  // Deterministic topic generator (space-themed and general topics)
   const baseTopics = [
     'Describe a first contact with an alien species near the ' + stageName,
     'Write a journal entry from an astronaut during the ' + stageName + ' mission',
@@ -56,8 +56,8 @@ export default function StageUploadPage() {
     'Argue whether the risk of ' + stageName + ' is worth the reward',
     'Imagine a student training simulator for ' + stageName + ' and describe a day using it'
   ];
-  const getRandomTopic = () => baseTopics[Math.floor(Math.random() * baseTopics.length)];
-  const [currentTopic, setCurrentTopic] = useState<string>(getRandomTopic());
+  const getDeterministicTopic = () => baseTopics[(stageId - 1) % baseTopics.length];
+  const currentTopic: string = getDeterministicTopic();
 
   // Check if stage is unlocked
   if (!isStageUnlocked(stageId)) {
@@ -153,6 +153,7 @@ export default function StageUploadPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('topic', currentTopic);
       const response = await fetch('/api/analyze-marks', {
         method: 'POST',
         body: formData,
@@ -209,6 +210,7 @@ export default function StageUploadPage() {
       const typedFile = new File([typedContent], `stage-${stageId}-typed.txt`, { type: 'text/plain' });
       const formData = new FormData();
       formData.append('file', typedFile);
+      formData.append('topic', currentTopic);
 
       const response = await fetch('/api/analyze-marks', {
         method: 'POST',
@@ -245,23 +247,19 @@ export default function StageUploadPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Stage {stageId}: {stageName}</h1>
           <p className="text-gray-600 text-lg">Upload your document or image for this stage, or type your content below.</p>
         </div>
-        {/* Random Topic for this Stage */}
+        {/* Fixed Topic for this Stage */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
-              Random Topic for {stageName}
+              Stage Topic for {stageName}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="p-4 bg-white rounded-lg border text-gray-800">
               <p className="text-base">{currentTopic}</p>
             </div>
-            <div className="flex justify-end">
-              <Button type="button" variant="outline" onClick={() => setCurrentTopic(getRandomTopic())}>
-                🎲 New random topic
-              </Button>
-            </div>
+            {/* Topic is fixed per stage; no ability to change/refresh */}
           </CardContent>
         </Card>
         <Card>
@@ -361,7 +359,7 @@ export default function StageUploadPage() {
           <CardContent>
             <form onSubmit={handleTypedSubmit} className="space-y-4">
               <textarea
-                className="w-full min-h-[120px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 resize-vertical"
+                className="w-full min-h-[120px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 resize-vertical break-words whitespace-pre-wrap overflow-auto"
                 placeholder="Type your answer or content for this stage..."
                 value={typedContent}
                 onChange={e => { setTypedContent(e.target.value); setTypedSubmitted(false); }}
@@ -369,7 +367,7 @@ export default function StageUploadPage() {
               />
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Word count: {typedContent.trim().split(/\s+/).filter(Boolean).length}</span>
-                <span>Score: {Math.min(100, Math.floor(typedContent.trim().split(/\s+/).filter(Boolean).length / 3))}</span>
+                {/* Removed live score display as requested */}
               </div>
               <Button type="submit" className="w-full">Submit Typed Content</Button>
               {typedSubmitted && (

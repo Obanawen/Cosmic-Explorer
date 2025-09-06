@@ -151,3 +151,36 @@ export function getGradeEncouragement(grade: string): string {
       return "🚀 Keep exploring and learning!";
   }
 }
+
+/**
+ * Convert score or grade to XP reward
+ * Basic mapping: A+ 250, A 200, B 150, C 100, D 60, E 30, F 10
+ * If score exists, add a small linear bonus (score/2)
+ */
+export function scoreToXp(score: number): number {
+  const grade = scoreToGrade(score);
+  const base = (
+    grade === 'A+' ? 250 :
+    grade === 'A' ? 200 :
+    grade === 'B' ? 150 :
+    grade === 'C' ? 100 :
+    grade === 'D' ? 60 :
+    grade === 'E' ? 30 :
+    10
+  );
+  const bonus = Math.floor(score / 2);
+  return base + bonus;
+}
+
+/**
+ * Convert XP to a level and progress. Simple linear progression: 500 XP per level.
+ */
+export function xpToLevel(xp: number): { level: number; current: number; required: number; progressPct: number } {
+  const perLevel = 500;
+  const clamped = Math.max(0, Math.floor(xp));
+  const level = Math.floor(clamped / perLevel) + 1;
+  const current = clamped % perLevel;
+  const required = perLevel;
+  const progressPct = Math.min(100, Math.round((current / required) * 100));
+  return { level, current, required, progressPct };
+}

@@ -2,7 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Medal, Award, Crown } from 'lucide-react';
+import { Trophy, Medal, Award, Crown, Zap } from 'lucide-react';
+import { useStageProgress } from '@/lib/stageProgress';
+import { xpToLevel } from '@/lib/utils';
 
 interface LeaderboardEntry {
   rank: number;
@@ -64,6 +66,8 @@ const getRankStyle = (rank: number) => {
 };
 
 export default function LeaderboardPage() {
+  const { xpBalance } = useStageProgress();
+  const levelInfo = xpToLevel(xpBalance);
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -74,6 +78,16 @@ export default function LeaderboardPage() {
             Leaderboard
           </h1>
           <p className="text-gray-600 text-lg">Top performers in AI text grading challenges</p>
+          {/* XP Bar */}
+          <div className="max-w-md mx-auto mt-4 text-left">
+            <div className="flex items-center justify-between text-sm text-gray-700 mb-1">
+              <span>Level {levelInfo.level}</span>
+              <span>{levelInfo.current}/{levelInfo.required} XP</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-700" style={{ width: `${levelInfo.progressPct}%` }}></div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}

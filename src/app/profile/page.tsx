@@ -1,14 +1,15 @@
 'use client';
 import { useStageProgress } from '@/lib/stageProgress';
-import { scoreToGrade, getGradeColor, getGradeDescription, getScoreMessage, getGradeEncouragement, getMilestoneMessage } from '@/lib/utils';
+import { scoreToGrade, getGradeColor, getGradeDescription, getScoreMessage, getGradeEncouragement, getMilestoneMessage, xpToLevel } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Trophy, Star, Target, TrendingUp, Award, BookOpen, Zap, Crown, Rocket, Sparkles } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { stageScores, getUnlockedStages } = useStageProgress();
+  const { stageScores, getUnlockedStages, xpBalance } = useStageProgress();
   const unlockedStages = getUnlockedStages();
+  const levelInfo = xpToLevel(xpBalance);
   
   // Calculate statistics
   const totalStages = 100;
@@ -78,7 +79,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Overall Stats */}
+        {/* Overall Stats + XP */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="text-center">
             <CardHeader className="pb-2">
@@ -118,6 +119,21 @@ export default function ProfilePage() {
               <CardTitle className="text-2xl">{overallGrade}</CardTitle>
               <CardDescription>Overall Grade</CardDescription>
             </CardHeader>
+          </Card>
+          {/* XP/Level */}
+          <Card className="text-center md:col-span-2 lg:col-span-4">
+            <CardHeader className="pb-2">
+              <div className="flex justify-center mb-2">
+                <Zap className="h-8 w-8 text-purple-600" />
+              </div>
+              <CardTitle className="text-2xl">Level {levelInfo.level}</CardTitle>
+              <CardDescription>{levelInfo.current}/{levelInfo.required} XP</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-700" style={{ width: `${levelInfo.progressPct}%` }}></div>
+              </div>
+            </CardContent>
           </Card>
         </div>
 
