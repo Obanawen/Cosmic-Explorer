@@ -33,7 +33,7 @@ export default function RootLayout({
           <div className="fixed inset-0 -z-10 bg-black">
             <Galaxy 
               mouseRepulsion={true}
-              mouseInteraction={false}
+              mouseInteraction={true}
               density={1}
               glowIntensity={0.3}
               autoCenterRepulsion={0}
