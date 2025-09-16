@@ -43,6 +43,21 @@ export default function StageUploadPage() {
   const stageId = Number(params.stageId);
   const stageName = getStageName(stageId);
   const { updateStageScore, isStageUnlocked } = useStageProgress();
+  // Deterministic topic generator (space-themed and general topics)
+  const baseTopics = [
+    'Describe a first contact with an alien species near the ' + stageName,
+    'Write a journal entry from an astronaut during the ' + stageName + ' mission',
+    'Invent a new technology that helps with ' + stageName + ' and explain it',
+    'Debate the ethics of exploring the region known as "' + stageName + '"',
+    'Tell a story about a malfunction during ' + stageName + ' and how it is solved',
+    'Compare life on Earth with life aboard a ship during ' + stageName,
+    'Explain how teamwork is essential to succeed at ' + stageName,
+    'Write a news article reporting the success of ' + stageName,
+    'Argue whether the risk of ' + stageName + ' is worth the reward',
+    'Imagine a student training simulator for ' + stageName + ' and describe a day using it'
+  ];
+  const getDeterministicTopic = () => baseTopics[(stageId - 1) % baseTopics.length];
+  const currentTopic: string = getDeterministicTopic();
 
   // Check if stage is unlocked
   if (!isStageUnlocked(stageId)) {
@@ -138,6 +153,7 @@ export default function StageUploadPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('topic', currentTopic);
       const response = await fetch('/api/analyze-marks', {
         method: 'POST',
         body: formData,
@@ -148,6 +164,15 @@ export default function StageUploadPage() {
       }
       setResult(data);
       
+      // Persist detailed analysis for the result page
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(`stage_${stageId}_analysis`, JSON.stringify(data));
+        }
+      } catch {
+        // ignore storage errors
+      }
+
       // Extract score from analysis result and save it
       if (data.analysis && typeof data.analysis.totalScore === 'number') {
         const score = data.analysis.totalScore;
@@ -175,15 +200,44 @@ export default function StageUploadPage() {
   const [typedContent, setTypedContent] = useState('');
   const [typedSubmitted, setTypedSubmitted] = useState(false);
 
-  const handleTypedSubmit = (e: React.FormEvent) => {
+  const handleTypedSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const wordCount = typedContent.trim().split(/\s+/).filter(Boolean).length;
-    const score = Math.min(100, Math.floor(wordCount / 3));
-    
-    // Save the score to progress context
-    updateStageScore(stageId, score);
-    
-    router.push(`/stages/${stageId}/result?score=${score}`);
+    setTypedSubmitted(true);
+    setUploading(true);
+    setError(null);
+    try {
+      // Create a text file from typed content and reuse the same API for consistent analysis
+      const typedFile = new File([typedContent], `stage-${stageId}-typed.txt`, { type: 'text/plain' });
+      const formData = new FormData();
+      formData.append('file', typedFile);
+      formData.append('topic', currentTopic);
+
+      const response = await fetch('/api/analyze-marks', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to analyze typed content');
+      }
+
+      setResult(data);
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(`stage_${stageId}_analysis`, JSON.stringify(data));
+        }
+      } catch {}
+
+      // Use AI totalScore for consistency with uploaded files
+      const score = data?.analysis?.totalScore ?? 0;
+      updateStageScore(stageId, score);
+      router.push(`/stages/${stageId}/result?score=${score}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -193,6 +247,21 @@ export default function StageUploadPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Stage {stageId}: {stageName}</h1>
           <p className="text-gray-600 text-lg">Upload your document or image for this stage, or type your content below.</p>
         </div>
+        {/* Fixed Topic for this Stage */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Stage Topic for {stageName}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="p-4 bg-white rounded-lg border text-gray-800">
+              <p className="text-base">{currentTopic}</p>
+            </div>
+            {/* Topic is fixed per stage; no ability to change/refresh */}
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -290,7 +359,7 @@ export default function StageUploadPage() {
           <CardContent>
             <form onSubmit={handleTypedSubmit} className="space-y-4">
               <textarea
-                className="w-full min-h-[120px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 resize-vertical"
+                className="w-full min-h-[120px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 resize-vertical break-words whitespace-pre-wrap overflow-auto"
                 placeholder="Type your answer or content for this stage..."
                 value={typedContent}
                 onChange={e => { setTypedContent(e.target.value); setTypedSubmitted(false); }}
@@ -298,7 +367,7 @@ export default function StageUploadPage() {
               />
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Word count: {typedContent.trim().split(/\s+/).filter(Boolean).length}</span>
-                <span>Score: {Math.min(100, Math.floor(typedContent.trim().split(/\s+/).filter(Boolean).length / 3))}</span>
+                {/* Removed live score display as requested */}
               </div>
               <Button type="submit" className="w-full">Submit Typed Content</Button>
               {typedSubmitted && (

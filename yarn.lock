@@ -1843,6 +1843,7 @@ __metadata:
     tailwindcss: "npm:^3.4.15"
     tailwindcss-animate: "npm:^1.0.7"
     typescript: "npm:^5.6.3"
+    word-list: "npm:^4.1.0"
   languageName: unknown
   linkType: soft
 
@@ -6726,6 +6727,13 @@ __metadata:
   bin:
     node-which: bin/which.js
   checksum: e556e4cd8b7dbf5df52408c9a9dd5ac6518c8c5267c8953f5b0564073c66ed5bf9503b14d876d0e9c7844d4db9725fb0dcf45d6e911e17e26ab363dc3965ae7b
+  languageName: node
+  linkType: hard
+
+"word-list@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "word-list@npm:4.1.0"
+  checksum: e94464422b1a2f00f73160dbf0f4e2d649dcbc95973e91ca2aeea6a011eed660014457e29500978c16f2d93ecc703d3b48d3cf8d505d5e723a35bc403c89980f
   languageName: node
   linkType: hard
 

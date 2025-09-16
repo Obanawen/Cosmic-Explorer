@@ -1,12 +1,77 @@
 'use client';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trophy, Star, Target, Rocket, Zap, Crown } from 'lucide-react';
+import { Trophy, Star, Target, Rocket, Zap, Crown, Lock } from 'lucide-react';
+import { getLocalDateKey, msUntilNextLocalMidnight, formatDurationShort } from '@/lib/utils';
 
 export default function CompetitionPage() {
+  const [todayKey, setTodayKey] = useState<string>('');
+  const [canPlayToday, setCanPlayToday] = useState<boolean>(true);
+  const [msUntilReset, setMsUntilReset] = useState<number>(msUntilNextLocalMidnight());
+
+  const storageKey = useMemo(() => 'competition:lastPlayedDate', []);
+
+  useEffect(() => {
+    const key = getLocalDateKey();
+    setTodayKey(key);
+    const lastPlayed = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
+    setCanPlayToday(!lastPlayed || lastPlayed !== key);
+
+    const interval = setInterval(() => {
+      const remaining = msUntilNextLocalMidnight();
+      setMsUntilReset(remaining);
+      if (remaining === 0) {
+        // New day: allow play again
+        const newKey = getLocalDateKey();
+        setTodayKey(newKey);
+        setCanPlayToday(true);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [storageKey]);
+
+  const onStartToday = () => {
+    try {
+      localStorage.setItem(storageKey, todayKey);
+      setCanPlayToday(false);
+      // TODO: Replace with actual competition flow route when available
+      // For now, we can navigate users to stages as a placeholder
+      window.location.href = '/stages';
+    } catch (_) {
+      // ignore
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-4xl mx-auto">
+        {/* Daily Gate */}
+        <Card className="mb-6 border-indigo-200 bg-white/80">
+          <CardContent className="p-6 flex flex-col items-center gap-3 text-center">
+            <div className="flex items-center gap-2">
+              {canPlayToday ? (
+                <Rocket className="h-6 w-6 text-indigo-600" />
+              ) : (
+                <Lock className="h-6 w-6 text-gray-500" />
+              )}
+              <h2 className="text-xl font-semibold">Daily Competition</h2>
+            </div>
+            {canPlayToday ? (
+              <>
+                <p className="text-gray-700">You can play once today. Good luck!</p>
+                <Button onClick={onStartToday} className="mt-1">Start Today's Competition</Button>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-600">You've already played today.</p>
+                <div className="text-sm text-gray-500">Opens again in: {formatDurationShort(msUntilReset)}</div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">Cosmic Competition</h1>
           <p className="text-lg text-gray-600">Challenge yourself and compete with other space explorers!</p>

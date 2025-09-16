@@ -3,8 +3,50 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useStageProgress } from '@/lib/stageProgress';
-import { scoreToGrade, getGradeColor, getStageCompletionMessage, getGradeEncouragement, getMilestoneMessage } from '@/lib/utils';
+import { scoreToGrade, getGradeColor, getStageCompletionMessage, getGradeEncouragement, getMilestoneMessage, scoreToXp, xpToLevel } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
+
+function CollapsibleText({ text, className }: { text: string; className?: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const [needsClamp, setNeedsClamp] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    // Measure if content exceeds collapsed height (~5 lines)
+    const collapsedMax = 100; // px, roughly 5 lines for text-sm
+    // Temporarily remove maxHeight to measure full height
+    const prev = el.style.maxHeight;
+    el.style.maxHeight = 'none';
+    const full = el.scrollHeight;
+    el.style.maxHeight = prev;
+    setNeedsClamp(full > collapsedMax + 4);
+  }, [text]);
+
+  const collapsedMax = 100; // px
+
+  return (
+    <div className="space-y-1">
+      <div
+        ref={containerRef}
+        className={`break-words break-all whitespace-pre-wrap ${className || ''}`}
+        style={!expanded ? { maxHeight: `${collapsedMax}px`, overflow: 'hidden' } : undefined}
+      >
+        {text}
+      </div>
+      {needsClamp && (
+        <button
+          type="button"
+          className="text-xs text-blue-600 hover:underline"
+          onClick={() => setExpanded(v => !v)}
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </button>
+      )}
+    </div>
+  );
+}
 import { Trophy, Lock, ArrowRight, Star, Target, Zap } from 'lucide-react';
 
 export default function StageResultPage() {
@@ -13,7 +55,8 @@ export default function StageResultPage() {
   const router = useRouter();
   const stageId = Number(params.stageId);
   const score = Number(searchParams.get('score') || '0');
-  const { updateStageScore, isStageUnlocked } = useStageProgress();
+  const { updateStageScore, isStageUnlocked, addXp, xpBalance } = useStageProgress();
+  const levelInfo = xpToLevel(xpBalance);
   const hasUpdatedScore = useRef(false);
   const [attempts, setAttempts] = useState(1);
 
@@ -28,6 +71,14 @@ export default function StageResultPage() {
       const currentAttempts = parseInt(stageAttempts) + 1;
       setAttempts(currentAttempts);
       localStorage.setItem(`stage_${stageId}_attempts`, currentAttempts.toString());
+      // Award XP based on score
+      try {
+        const xp = scoreToXp(score);
+        addXp(xp);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('last_awarded_xp', String(xp));
+        }
+      } catch {}
     }
   }, [stageId, score, updateStageScore]);
 
@@ -37,6 +88,22 @@ export default function StageResultPage() {
   const completionMessage = getStageCompletionMessage(score, stageId);
   const gradeEncouragement = getGradeEncouragement(grade);
   const milestoneMessage = getMilestoneMessage(stageId);
+  const [analysis, setAnalysis] = useState<any | null>(null);
+
+  // Load detailed analysis stored from the stage page
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = sessionStorage.getItem(`stage_${stageId}_analysis`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          setAnalysis(parsed.analysis || null);
+        }
+      }
+    } catch {
+      setAnalysis(null);
+    }
+  }, [stageId]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -50,7 +117,18 @@ export default function StageResultPage() {
           {score}/100
         </div>
         
-        {/* Grade Display */}
+        {/* XP Bar */}
+        <div className="mb-4 text-left">
+          <div className="flex items-center justify-between text-sm text-gray-700 mb-1">
+            <span>Level {levelInfo.level}</span>
+            <span>{levelInfo.current}/{levelInfo.required} XP</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-700" style={{ width: `${levelInfo.progressPct}%` }}></div>
+          </div>
+        </div>
+
+        {/* Grade & XP Display */}
         <div className="mb-4">
           <Badge 
             variant="outline" 
@@ -58,7 +136,105 @@ export default function StageResultPage() {
           >
             Grade: {grade}
           </Badge>
+          <div className="text-sm text-gray-700 mt-2">XP earned: {scoreToXp(score)} · Total XP: {xpBalance}</div>
         </div>
+
+        {/* Grammar, Spelling, Punctuation Breakdown */}
+        {analysis && (
+          <div className="text-left space-y-4 mb-6">
+            {/* Categories */}
+            {Array.isArray(analysis.categories) && analysis.categories.length > 0 && (
+              <div className="p-4 bg-gray-50 rounded-lg border">
+                <h3 className="font-semibold mb-3">Category Breakdown</h3>
+                <div className="space-y-3">
+                  {analysis.categories.map((cat: any, idx: number) => (
+                    <div key={idx} className="p-3 bg-white rounded border">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium">{cat.category}</span>
+                        <Badge variant="secondary">{cat.score}/{cat.maxScore}</Badge>
+                      </div>
+                      {cat.feedback && (
+                        <p className="text-sm text-gray-700 mb-2">{cat.feedback}</p>
+                      )}
+                      {Array.isArray(cat.issues) && cat.issues.length > 0 && (
+                        <div className="mb-2">
+                          <p className="text-sm font-medium text-red-700">Issues:</p>
+                          <ul className="text-sm text-red-700 list-disc list-inside break-words break-all whitespace-pre-wrap">
+                            {cat.issues.map((i: string, j: number) => (
+                              <li key={j} className="break-words break-all whitespace-pre-wrap">
+                                <CollapsibleText text={i} />
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {Array.isArray(cat.corrections) && cat.corrections.length > 0 && (
+                        <div className="mb-2">
+                          <p className="text-sm font-medium text-green-700">Corrections:</p>
+                          <ul className="text-sm text-green-700 list-disc list-inside break-words break-all whitespace-pre-wrap">
+                            {cat.corrections.map((c: string, j: number) => (
+                              <li key={j} className="font-mono break-words break-all whitespace-pre-wrap">
+                                <CollapsibleText text={c} className="font-mono" />
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {Array.isArray(cat.suggestions) && cat.suggestions.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium text-blue-700">Suggestions:</p>
+                          <ul className="text-sm text-blue-700 list-disc list-inside break-words break-all whitespace-pre-wrap">
+                            {cat.suggestions.map((s: string, j: number) => (
+                              <li key={j} className="break-words break-all whitespace-pre-wrap">
+                                <CollapsibleText text={s} />
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Specific Corrections Summary */}
+            {(analysis.grammarCorrections || analysis.spellingCorrections || analysis.punctuationCorrections) && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {analysis.spellingCorrections && analysis.spellingCorrections.length > 0 && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded">
+                    <h4 className="font-medium text-red-800 mb-1">Spelling Corrections</h4>
+                    <ul className="text-sm text-red-800 list-disc list-inside space-y-1">
+                      {analysis.spellingCorrections.map((c: string, i: number) => (
+                        <li key={i} className="font-mono">{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {analysis.grammarCorrections && analysis.grammarCorrections.length > 0 && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <h4 className="font-medium text-yellow-800 mb-1">Grammar Corrections</h4>
+                    <ul className="text-sm text-yellow-800 list-disc list-inside space-y-1">
+                      {analysis.grammarCorrections.map((c: string, i: number) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {analysis.punctuationCorrections && analysis.punctuationCorrections.length > 0 && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                    <h4 className="font-medium text-blue-800 mb-1">Punctuation Corrections</h4>
+                    <ul className="text-sm text-blue-800 list-disc list-inside space-y-1">
+                      {analysis.punctuationCorrections.map((c: string, i: number) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Motivational Messages */}
         <div className="mb-6 space-y-3">
